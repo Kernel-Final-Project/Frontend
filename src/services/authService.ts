@@ -1,50 +1,44 @@
-import apiClient from '@/lib/api';
+// src/services/authService.ts
+import api from '@/lib/api';
 
 export interface User {
-  id: string;
   email: string;
   name: string;
-  // 추가 필드는 백엔드 응답에 맞춰 수정
+  provider: string;
+  picture?: string;
 }
 
-export interface LoginResponse {
-  user: User;
-  token?: string;
+export interface AuthResponse {
+  success: boolean;
+  data?: User;
+  message?: string;
 }
 
-/**
- * 현재 로그인한 사용자 정보 조회
- */
-export const getCurrentUser = async (): Promise<User> => {
-  const response = await apiClient.get<User>('/auth/me');
-  return response.data;
-};
+export const authService = {
+  // 현재 로그인한 사용자 정보 조회
+  async getCurrentUser(): Promise<User | null> {
+    try {
+      const response = await api.get<AuthResponse>('/api/v1/auth/me');
+      return response.data.data || null;
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      return null;
+    }
+  },
 
-/**
- * Google OAuth2 로그인 URL 생성
- */
-export const getGoogleLoginUrl = (): string => {
-  return `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
-};
+  // 로그아웃
+  async logout(): Promise<void> {
+    await api.post('/api/v1/auth/logout');
+  },
 
-/**
- * Naver OAuth2 로그인 URL 생성
- */
-export const getNaverLoginUrl = (): string => {
-  return `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/naver`;
-};
+  // 회원 탈퇴
+  async withdraw(): Promise<void> {
+    await api.delete('/api/v1/auth/withdraw');
+  },
 
-/**
- * Kakao OAuth2 로그인 URL 생성
- */
-export const getKakaoLoginUrl = (): string => {
-  return `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/kakao`;
-};
-
-/**
- * 로그아웃
- */
-export const logout = async (): Promise<void> => {
-  await apiClient.post('/auth/logout');
-  localStorage.removeItem('accessToken');
+  // OAuth2 로그인 URL 생성
+  getOAuth2LoginUrl(provider: 'google' | 'naver'): string {
+    // Vite 프록시를 통해 요청하도록 상대 경로 사용
+    return `/oauth2/authorization/${provider}`;
+  },
 };

@@ -7,9 +7,20 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 3000,
+    port: 5173,           // 3000 → 5173으로 변경
+    strictPort: true,     // 추가: 포트 고정 (다른 포트로 자동 변경 방지)
     proxy: {
       '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/oauth2/authorization': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/login/oauth2': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
