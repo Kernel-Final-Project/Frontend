@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "워크플로우 관리", href: "/" },
+  { label: "워크플로우 관리", href: "/workflows" },
   { label: "이용 안내", href: "/howToUse" },
   { label: "사이트 등록 요청", href: "/howToUse" },
   { label: "공지사항", href: "/notices" }

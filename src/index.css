@@ -51,6 +51,13 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217 91% 60%;
+
+    /* Status colors */
+    --status-active: 142 76% 36%;
+    --status-inactive: 220 10% 46%;
+    --status-success: 160 84% 39%;
+    --status-warning: 38 92% 50%;
+    --status-error: 0 84% 60%;
   }
 
   .dark {
@@ -111,6 +118,14 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .card-shadow {
+    box-shadow: var(--card-shadow);
+  }
+
+  .card-shadow-hover {
+    box-shadow: var(--card-shadow-hover);
   }
 
   .hero-gradient {
