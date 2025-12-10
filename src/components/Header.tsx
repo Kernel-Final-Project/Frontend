@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { NavLink } from "@/components/NavLink";
 
 const navItems = [
-  { label: "제품소개", href: "#products" },
-  { label: "솔루션", href: "#solutions" },
-  { label: "회사소개", href: "#about" },
+  { label: "제품소개", href: "/#products", isAnchor: true },
+  { label: "솔루션", href: "/#solutions", isAnchor: true },
+  { label: "회사소개", href: "/#about", isAnchor: true },
+  { label: "워크플로우 관리", href: "/workflows", isAnchor: false },
+  { label: "대시보드", href: "/dashboard", isAnchor: false },
+  { label: "공지사항", href: "/notices", isAnchor: false },
 ];
 
 export function Header() {
@@ -23,15 +27,26 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) =>
+            item.isAnchor ? (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <NavLink
+                key={item.label}
+                to={item.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                activeClassName="text-primary font-semibold"
+              >
+                {item.label}
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -55,16 +70,28 @@ export function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-background border-b border-border animate-fade-in">
           <nav className="container py-4 flex flex-col gap-3">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item) =>
+              item.isAnchor ? (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <NavLink
+                  key={item.label}
+                  to={item.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  activeClassName="text-primary font-semibold"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </NavLink>
+              )
+            )}
             <div className="flex flex-col gap-2 pt-3 border-t border-border">
               <Button variant="ghost" size="sm" className="justify-start">
                 로그인
