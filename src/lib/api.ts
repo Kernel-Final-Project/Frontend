@@ -1,69 +1,91 @@
-import axios from 'axios';
+// src/lib/api.ts
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
+// Axios 인스턴스 생성
 export const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/${API_VERSION}`,
+  baseURL: `${API_BASE_URL}`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // OAuth2를 위한 쿠키 전송 허용
+  withCredentials: true, // OAuth2 세션 쿠키 전송 (JSESSIONID)
 });
 
-// Request interceptor
+// ========== Request Interceptor ==========
 apiClient.interceptors.request.use(
-  (config) => {
-    // 필요시 인증 토큰 추가
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  (config: InternalAxiosRequestConfig) => {
+    // 개발 환경에서만 요청 로그 출력
+    if (import.meta.env.DEV) {
+      console.log(
+        `[API Request] ${config.method?.toUpperCase()} ${config.url}`,
+        config.data ? config.data : ''
+      );
     }
+
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
+    console.error('[Request Error]', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor
+// ========== Response Interceptor ==========
 apiClient.interceptors.response.use(
   (response) => {
+    // 개발 환경에서만 응답 로그 출력
+    if (import.meta.env.DEV) {
+      console.log(
+        `[API Response] ${response.config.url} - ${response.status}`,
+        response.data
+      );
+    }
+
     return response;
   },
-  (error) => {
-    // 에러 처리
+  (error: AxiosError) => {
     if (error.response) {
-      // 서버 응답이 있는 경우
-      switch (error.response.status) {
+      const { status, data } = error.response;
+      const url = error.config?.url;
+
+      // 에러 메시지 추출
+      const errorMessage = (data as any)?.message || '알 수 없는 오류가 발생했습니다';
+
+      switch (status) {
         case 401:
-          // 인증 실패
-          console.error('Unauthorized - Please login');
-          // 필요시 로그인 페이지로 리다이렉트
+          console.error('[401 Unauthorized]', url, '- 인증이 필요합니다');
+          
+          // 로그인 페이지가 아닌 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/login') && 
+              !window.location.pathname.includes('/oauth2/callback')) {
+            window.location.href = '/login';
+          }
           break;
+
         case 403:
-          // 권한 없음
-          console.error('Forbidden - Access denied');
+          console.error('[403 Forbidden]', url, '- 접근 권한이 없습니다');
           break;
+
         case 404:
-          // Not Found
-          console.error('Resource not found');
+          console.error('[404 Not Found]', url, '- 리소스를 찾을 수 없습니다');
           break;
+
         case 500:
-          // 서버 에러
-          console.error('Server error');
+          console.error('[500 Server Error]', url, '-', errorMessage);
           break;
+
         default:
-          console.error('API Error:', error.response.data);
+          console.error(`[${status} Error]`, url, '-', errorMessage);
       }
     } else if (error.request) {
-      // 요청은 보냈으나 응답을 받지 못한 경우
-      console.error('No response from server');
+      console.error('[Network Error] 서버 응답 없음 - 네트워크를 확인해주세요');
     } else {
-      // 요청 설정 중 에러 발생
-      console.error('Request error:', error.message);
+      console.error('[Request Error]', error.message);
     }
+
     return Promise.reject(error);
   }
 );
