@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { noticeService, type ApiNotice } from "@/services/noticeService";
 import {
     AlertCircle,
-    ArrowLeft,
     CalendarDays,
     Clock3,
     Eye,
@@ -58,11 +57,6 @@ export default function NoticeDetailPage() {
     const authorName = useMemo(() => {
         if (!notice) return "";
         return notice.authorName ?? notice.author?.name ?? notice.author?.username ?? `작성자 ${notice.authorId}`;
-    }, [notice]);
-
-    const categoryLabel = useMemo(() => {
-        if (!notice) return "";
-        return notice.announcementType === "GENERAL" ? "일반" : notice.announcementType;
     }, [notice]);
 
     const formatDateTime = (value?: string) => {
@@ -162,7 +156,7 @@ export default function NoticeDetailPage() {
                                         <a
                                             href={notice.noticeFile.fileUrl}
                                             target="_blank"
-                                            rel="noreferrer"
+                                            rel="noopener noreferrer"
                                             className={cn(
                                                 "inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm transition-colors",
                                                 "hover:border-primary/60 hover:text-primary",

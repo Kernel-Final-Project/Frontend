@@ -194,6 +194,8 @@ export default function NoticeListPage() {
                                                 {notice.attachmentName ? (
                                                     <a
                                                         href={notice.attachmentUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-1 text-primary hover:underline"
                                                     >
                                                         <Paperclip className="h-4 w-4" />

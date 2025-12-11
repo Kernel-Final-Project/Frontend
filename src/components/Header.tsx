@@ -62,7 +62,7 @@ export function Header() {
           ) : isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-3 py-2 focus:outline-none">
+                <button className="flex items-center gap-3 rounded-lg px-3 py-2 focus:outline-none hover:bg-accent/50 transition-colors">
                   {user.picture ? (
                     <img
                       src={user.picture}
