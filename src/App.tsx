@@ -12,6 +12,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import Login from "./pages/Login";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import NoticeListPage from "./pages/notices/NoticeListPage";
+import NoticeDetailPage from "./pages/notices/NoticeDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -25,10 +27,10 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-            
+
             {/* 보호된 라우트 */}
             <Route path="/" element={
-                <Index />
+              <Index />
             } />
             {/* <Route path="/work/:id" element={
               <ProtectedRoute>
@@ -41,12 +43,14 @@ const App = () => (
               </ProtectedRoute>
             } /> */}
 
-          <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
-          <Route path="/work/:id" element={<ProtectedRoute><WorkManagement /></ProtectedRoute>} />
-          <Route path="/work/:workId/log/:logId" element={<ProtectedRoute><LogDetail /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
+            <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
+            <Route path="/work/:id" element={<ProtectedRoute><WorkManagement /></ProtectedRoute>} />
+            <Route path="/work/:workId/log/:logId" element={<ProtectedRoute><LogDetail /></ProtectedRoute>} />
+            <Route path="/notices" element={<NoticeListPage />} />
+            <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
+            <Route path="*" element={<NotFound />} />
 
-            </Routes>
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

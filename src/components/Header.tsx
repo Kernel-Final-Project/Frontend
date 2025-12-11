@@ -4,6 +4,7 @@ import { Menu, X, LogOut, User } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import logoImg from "@/assets/logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +23,7 @@ const navItems = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -34,10 +35,11 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border">
       <div className="container flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">O</span>
-          </div>
-          <span className="font-bold text-lg text-foreground">OCP</span>
+          <img
+            src={logoImg}
+            alt="OCP 로고"
+            className="w-20 h-24 object-contain"
+          />
         </a>
 
         {/* Desktop Navigation */}
@@ -55,10 +57,12 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          {isAuthenticated && user ? (
+          {isLoading ? (
+            <div className="w-32 h-10" />
+          ) : isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 hover:bg-accent/50 rounded-lg px-3 py-2 transition-colors">
+                <button className="flex items-center gap-3 rounded-lg px-3 py-2 focus:outline-none hover:bg-accent/50 transition-colors">
                   {user.picture ? (
                     <img
                       src={user.picture}
@@ -106,7 +110,7 @@ export function Header() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2 focus:outline-none"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="메뉴 토글"
         >
@@ -152,7 +156,9 @@ export function Header() {
               </NavLink>
             ))}
 
-            {isAuthenticated ? (
+            {isLoading ? (
+              <div className="h-20" />
+            ) : isAuthenticated ? (
               <>
                 <Button
                   variant="outline"
