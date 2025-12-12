@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { LogAccordion } from "@/components/LogAccordion";
@@ -76,7 +76,7 @@ export default function LogDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 pt-24 pb-8">
         <Button
           variant="ghost"
@@ -91,7 +91,7 @@ export default function LogDetail() {
           <h1 className="text-2xl font-bold text-foreground mb-6">
             워크 관리 (상세 로그)
           </h1>
-          
+
           <div className="space-y-3">
             {mockLogData.map((item) => (
               <LogAccordion

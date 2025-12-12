@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // OAuth2 로그인
-  const login = (provider: 'google' | 'naver') => {
+  const login = (provider: 'google' | 'naver' | 'kakao') => {
     const loginUrl = authService.getOAuth2LoginUrl(provider);
     window.location.href = loginUrl;
   };

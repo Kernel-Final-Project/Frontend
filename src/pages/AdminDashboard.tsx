@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/common/Header";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminMainContent } from "@/components/admin/AdminMainContent";
 import { AdminNavItem, AdminSection } from "@/components/admin/types";
