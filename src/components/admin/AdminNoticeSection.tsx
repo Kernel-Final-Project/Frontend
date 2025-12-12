@@ -63,10 +63,7 @@ export function AdminNoticeSection({ active }: AdminNoticeSectionProps) {
   };
 
   const handleEdit = (id: number) => {
-    toast({
-      title: "공지 수정",
-      description: `공지 ${id} 수정 기능은 준비 중입니다.`,
-    });
+    navigate(`/admin/notices/${id}/edit`);
   };
 
   const handleDelete = async (id: number) => {

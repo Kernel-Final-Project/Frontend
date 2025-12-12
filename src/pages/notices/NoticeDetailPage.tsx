@@ -147,7 +147,7 @@ export default function NoticeDetailPage() {
                             </CardHeader>
 
                             <CardContent className="space-y-6">
-                                <div className="rounded-lg border border-border/60 bg-background/80 p-6 leading-relaxed text-foreground whitespace-pre-wrap">
+                                <div className="bg-background/80 p-6 leading-relaxed text-foreground whitespace-pre-wrap">
                                     {notice.content || "내용이 없습니다."}
                                 </div>
 

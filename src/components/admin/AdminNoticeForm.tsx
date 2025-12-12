@@ -32,9 +32,10 @@ type AdminNoticeFormProps = {
   defaultValues?: Partial<NoticeFormValues>;
   onSubmit: (values: NoticeFormValues) => Promise<void> | void;
   submitting?: boolean;
+  submitLabel?: string;
 };
 
-export function AdminNoticeForm({ defaultValues, onSubmit, submitting }: AdminNoticeFormProps) {
+export function AdminNoticeForm({ defaultValues, onSubmit, submitting, submitLabel }: AdminNoticeFormProps) {
   const form = useForm<NoticeFormValues>({
     resolver: zodResolver(noticeSchema),
     defaultValues: {
@@ -149,7 +150,7 @@ export function AdminNoticeForm({ defaultValues, onSubmit, submitting }: AdminNo
 
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={submitting}>
-            {submitting ? "저장 중..." : "등록하기"}
+            {submitting ? "저장 중..." : submitLabel ?? "등록하기"}
           </Button>
         </div>
       </form>

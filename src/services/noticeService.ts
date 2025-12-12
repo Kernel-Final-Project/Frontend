@@ -33,6 +33,8 @@ export type CreateNoticePayload = {
     file?: File | null;
 };
 
+export type UpdateNoticePayload = CreateNoticePayload;
+
 export const noticeService = {
     async getNotices(): Promise<ApiNotice[]> {
         const res = await api.get("/api/v1/notices");
@@ -61,6 +63,28 @@ export const noticeService = {
         }
 
         const res = await api.post("/api/v1/admin/notices", {
+            ...rest,
+        });
+        return res.data?.data;
+    },
+
+    async updateNotice(id: number | string, payload: UpdateNoticePayload) {
+        const { file, ...rest } = payload;
+        if (file) {
+            const formData = new FormData();
+            formData.append("title", rest.title);
+            formData.append("content", rest.content);
+            formData.append("announcementType", rest.announcementType);
+            formData.append("isImportant", String(rest.isImportant));
+            formData.append("file", file);
+
+            const res = await api.patch(`/api/v1/admin/notices/${id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            return res.data?.data;
+        }
+
+        const res = await api.patch(`/api/v1/admin/notices/${id}`, {
             ...rest,
         });
         return res.data?.data;
