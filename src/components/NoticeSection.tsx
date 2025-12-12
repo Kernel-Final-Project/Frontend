@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { noticeService } from "@/services/noticeService";
+import { noticeService, type ApiNotice } from "@/services/noticeService";
 import { useNavigate } from "react-router-dom";
 
 export function NoticeSection() {
@@ -13,7 +13,7 @@ export function NoticeSection() {
 
   const latestNotices = notices?.slice(-3).reverse() || [];
 
-  const getTags = (notice: any) => {
+  const getTags = (notice: ApiNotice) => {
     const tags = [];
     if (notice.isImportant) tags.push("중요");
     if (notice.announcementType === "GENERAL") tags.push("공지");
