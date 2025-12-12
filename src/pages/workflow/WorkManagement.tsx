@@ -18,9 +18,9 @@ const WorkManagement = () => {
   const workflowId = Number(id);
 
   // 이전 페이지에서 전달받은 워크플로우 데이터
-  const workflowFromState = location.state?.WorkflowDetailResponse as WorkflowDetailResponse | undefined;
+  const workflowFromState = location.state?.Workflow as Workflow | undefined;
 
-  const [workflow, setWorkflow] = useState<WorkflowDetailResponse | null>(workflowFromState || null);
+  const [workflow, setWorkflow] = useState<WorkflowDetailResponse | null>();
   const [works, setWorks] = useState<Work[]>([]);
   const [currentPage, setCurrentPage] = useState(0); // 백엔드는 0부터 시작
   const [totalPages, setTotalPages] = useState(0);
@@ -108,10 +108,12 @@ const WorkManagement = () => {
   const workflowInfo = workflow ? {
     id: workflow.workflowId,
     url: workflow.siteUrl,
-    blog: workflow.blogTypeId,
+    blogId: workflow.blogTypeId,
+    blogName: workflow.blogTypeName,
     firstCategory: workflow.setTrendCategory.depth1Category,
     secondCategory: workflow.setTrendCategory.depth2Category,
     thirdCategory: workflow.setTrendCategory.depth3Category,
+    mainCategoryName: workflow.setTrendCategory.mainCategoryName,
     postCount: totalElements,
   } : null;
 

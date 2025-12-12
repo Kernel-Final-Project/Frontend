@@ -10,10 +10,12 @@ import {
 interface WorkflowInfo {
   id: number;
   url: string;
-  blog: number;
+  blogId: number;
+  blogName: string;
   firstCategory: number;
   secondCategory: number;
   thirdCategory: number;
+  mainCategoryName: string;
   postCount: number;
 }
 
@@ -49,8 +51,8 @@ export function WorkInfoCard({ workflow }: WorkInfoCardProps) {
                 {workflow.url}
               </a>
             </TableCell>
-            <TableCell className="text-center">{workflow.blog}</TableCell>
-            <TableCell className="text-center">{workflow.thirdCategory}</TableCell>
+            <TableCell className="text-center">{workflow.blogName}</TableCell>
+            <TableCell className="text-center">{workflow.mainCategoryName}</TableCell>
             <TableCell className="text-center font-medium">{workflow.postCount}건</TableCell>
           </TableRow>
         </TableBody>

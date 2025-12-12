@@ -40,6 +40,7 @@ export interface WorkflowDetailResponse {
   userId: number;
   siteUrl: string;
   blogTypeId: number;
+  blogTypeName: string;
   blogUrl: string;
   blogAccountId: string;
   recurrenceRule: RecurrenceRule;
@@ -56,6 +57,7 @@ export interface TrendCategory {
 export interface WorkflowRequest {
   siteUrl: string;
   blogTypeId: number;        // string → number 변경
+  blogTypeName: string;
   blogUrl: string;
   blogAccountId: string;
   categoryId: number;        // trendCategoryName → categoryId 변경
