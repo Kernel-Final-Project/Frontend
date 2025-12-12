@@ -56,7 +56,13 @@ export default function NoticeDetailPage() {
 
     const authorName = useMemo(() => {
         if (!notice) return "";
-        return notice.authorName ?? notice.author?.name ?? notice.author?.username ?? `작성자 ${notice.authorId}`;
+        return (
+            notice.userName ??
+            notice.authorName ??
+            notice.author?.name ??
+            notice.author?.username ??
+            "작성자 미확인"
+        );
     }, [notice]);
 
     const formatDateTime = (value?: string) => {

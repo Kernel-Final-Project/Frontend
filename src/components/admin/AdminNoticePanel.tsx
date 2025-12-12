@@ -1,24 +1,35 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ClipboardList, Loader2, Pin } from "lucide-react";
+import { AlertCircle, ClipboardList, Loader2, Pin, Pencil, Trash2, Plus } from "lucide-react";
 import { NoticeRow } from "./types";
 
 type AdminNoticePanelProps = {
   notices: NoticeRow[];
   loading: boolean;
   error: string | null;
+  onCreate?: () => void;
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
+  deletingId?: number | null;
 };
 
-export function AdminNoticePanel({ notices, loading, error }: AdminNoticePanelProps) {
+export function AdminNoticePanel({ notices, loading, error, onCreate, onEdit, onDelete, deletingId }: AdminNoticePanelProps) {
   return (
     <Card className="card-shadow overflow-hidden">
-      <CardHeader className="bg-muted/40 flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <ClipboardList className="h-4 w-4" />
-          <span>공지사항 관리</span>
+      <CardHeader className="bg-muted/40 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <ClipboardList className="h-4 w-4" />
+            <span>공지사항 관리</span>
+          </div>
+          <Button size="sm" onClick={() => onCreate?.()} className="gap-2">
+            <Plus className="h-4 w-4" />
+            공지 등록
+          </Button>
         </div>
         <CardTitle className="text-xl">공지목록</CardTitle>
         <p className="text-sm text-muted-foreground">
@@ -43,9 +54,10 @@ export function AdminNoticePanel({ notices, loading, error }: AdminNoticePanelPr
             <TableHeader>
               <TableRow className="bg-secondary/50">
                 <TableHead className="w-12 text-center">No</TableHead>
-                <TableHead>제목</TableHead>
+                <TableHead className="text-center">제목</TableHead>
                 <TableHead className="w-32 text-center">작성자</TableHead>
                 <TableHead className="w-28 text-center">작성일</TableHead>
+                <TableHead className="w-32 text-center">액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -55,7 +67,7 @@ export function AdminNoticePanel({ notices, loading, error }: AdminNoticePanelPr
                   className={cn("hover:bg-muted/50", notice.important ? "bg-primary/5" : undefined)}
                 >
                   <TableCell className="text-center text-muted-foreground">{index + 1}</TableCell>
-                  <TableCell className="flex flex-col gap-1 py-3">
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       {notice.important && (
                         <Badge
@@ -68,10 +80,32 @@ export function AdminNoticePanel({ notices, loading, error }: AdminNoticePanelPr
                       )}
                       <span className="font-semibold text-foreground">{notice.title}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">ID: {notice.id}</span>
                   </TableCell>
                   <TableCell className="text-center text-muted-foreground">{notice.author}</TableCell>
                   <TableCell className="text-center text-muted-foreground">{notice.createdAt}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => onEdit?.(notice.id)}
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        수정
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => onDelete?.(notice.id)}
+                        disabled={deletingId === notice.id}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        {deletingId === notice.id ? "삭제 중..." : "삭제"}
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
