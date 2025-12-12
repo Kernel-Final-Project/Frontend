@@ -34,7 +34,7 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container flex items-center justify-between h-16">
-        <a href="/" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-1">
           <img
             src={logoImg}
             alt="OCP 로고"
@@ -43,12 +43,17 @@ export function Header() {
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-12">
           {navItems.map((item) => (
             <NavLink
               key={item.label}
               to={item.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-semibold text-muted-foreground transition-colors"
+              style={{
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#5271ff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = ''}
               activeClassName="text-primary font-semibold"
             >
               {item.label}
@@ -60,7 +65,7 @@ export function Header() {
           {isLoading ? (
             <div className="w-32 h-10" />
           ) : isAuthenticated && user ? (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-3 py-2 focus:outline-none hover:bg-accent/50 transition-colors">
                   {user.picture ? (

@@ -1,8 +1,7 @@
 import { Header } from "@/components/common/Header";
 import { HeroSection } from "@/components/main/HeroSection";
 import { FeaturesSection } from "@/components/main/FeaturesSection";
-import { CTASection } from "@/components/main/CTASection";
-import { NewsSection } from "@/components/NewsSection";
+import { NoticeSection } from "@/components/NoticeSection.tsx";
 import { Footer } from "@/components/common/Footer";
 
 const Index = () => {
@@ -12,8 +11,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <FeaturesSection />
-        <CTASection />
-        <NewsSection />
+        <NoticeSection />
       </main>
       <Footer />
     </div>
