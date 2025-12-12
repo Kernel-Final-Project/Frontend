@@ -51,6 +51,7 @@ export interface TrendCategory {
   depth1Category: number;
   depth2Category: number | null;
   depth3Category: number | null;
+  mainCategoryName: string;
 }
 
 // create/update 공통 요청 타입

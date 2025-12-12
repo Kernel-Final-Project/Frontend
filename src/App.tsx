@@ -64,11 +64,7 @@ const App = () => (
               <ProtectedRoute>
                 <LogDetail />
               </ProtectedRoute>
-            } /> */}
-
-            <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
-            <Route path="/work/:id" element={<ProtectedRoute><WorkManagement /></ProtectedRoute>} />
-            <Route path="/work/:workId/log/:logId" element={<ProtectedRoute><LogDetail /></ProtectedRoute>} />
+            } />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/notices/new" element={<ProtectedRoute><NoticeCreatePage /></ProtectedRoute>} />
             <Route path="/admin/notices/:noticeId/edit" element={<ProtectedRoute><NoticeEditPage /></ProtectedRoute>} />
