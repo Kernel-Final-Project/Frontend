@@ -10,17 +10,17 @@ export function HeroSection() {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
-      
+
       {/* Overlay */}
       <div className="absolute inset-0 hero-gradient" />
-      
+
       {/* Content */}
       <div className="container relative z-10 pt-16">
         <div className="max-w-2xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight animate-fade-up">
-            Innovate
+            Online
             <br />
-            for Tomorrow
+            Commerce Promotion
           </h1>
           <p className="mt-6 text-lg text-primary-foreground/80 animate-fade-up" style={{ animationDelay: "0.1s" }}>
             비즈니스 혁신을 위한 첨단 기술 솔루션

@@ -16,3 +16,12 @@ export type NoticeRow = {
   createdAt: string;
   important: boolean;
 };
+
+export type AdminUser = {
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
+};
