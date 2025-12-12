@@ -42,7 +42,12 @@ export default function NoticeListPage() {
                     title: n.title,
                     category: n.announcementType === "GENERAL" ? "일반" : n.announcementType,
                     date: n.createdAt.slice(0, 10),
-                    owner: n.authorName ?? n.author?.name ?? n.author?.username ?? `작성자 ${n.authorId}`,
+                    owner:
+                        n.userName ??
+                        n.authorName ??
+                        n.author?.name ??
+                        n.author?.username ??
+                        "작성자 미확인",
                     pinned: n.isImportant,
                     views: n.viewCount ?? 0,
                     attachmentName: n.noticeFile?.originalName ?? undefined,
