@@ -1,9 +1,9 @@
-import { Header } from "@/components/Header";
-import { HeroSection } from "@/components/HeroSection";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { CTASection } from "@/components/CTASection";
+import { Header } from "@/components/common/Header";
+import { HeroSection } from "@/components/main/HeroSection";
+import { FeaturesSection } from "@/components/main/FeaturesSection";
+import { CTASection } from "@/components/main/CTASection";
 import { NewsSection } from "@/components/NewsSection";
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/common/Footer";
 
 const Index = () => {
   return (

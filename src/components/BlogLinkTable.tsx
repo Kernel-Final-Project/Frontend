@@ -9,14 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useParams } from "react-router-dom";
-
-interface BlogLink {
-  id: number;
-  blogLink: string;
-  product: string;
-  executionTime: string;
-  status: "성공" | "진행중" | "실패";
-}
+import { BlogLink } from "@/utils/workUtils";
 
 interface BlogLinkTableProps {
   blogLinks: BlogLink[];
@@ -48,53 +41,58 @@ export function BlogLinkTable({ blogLinks, onLogDetail, onStatsDetail }: BlogLin
             <TableHead className="font-semibold text-foreground text-center">상품</TableHead>
             <TableHead className="font-semibold text-foreground text-center">실행시간</TableHead>
             <TableHead className="font-semibold text-foreground text-center">로그관리</TableHead>
-            <TableHead className="font-semibold text-foreground text-center">통계관리</TableHead>
             <TableHead className="font-semibold text-foreground w-24 text-center">상태</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {blogLinks.map((link, index) => (
-            <TableRow 
-              key={link.id} 
-              className="transition-colors hover:bg-muted/50"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <TableCell className="font-medium text-center">{link.id}</TableCell>
-              <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                {link.blogLink}
-              </TableCell>
-              <TableCell className="text-center">{link.product}</TableCell>
-              <TableCell className="text-center text-muted-foreground">{link.executionTime}</TableCell>
-              <TableCell className="text-center">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLogDetail(link.id);
-                  }}
-                  className="text-xs h-8 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                >
-                  상세보기
-                </Button>
-              </TableCell>
-              <TableCell className="text-center">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => onStatsDetail(link.id)}
-                  className="text-xs h-8 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                >
-                  상세보기
-                </Button>
-              </TableCell>
-              <TableCell className="text-center">
-                <Badge className={statusStyles[link.status]}>
-                  {link.status}
-                </Badge>
+          {blogLinks.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                아직 포스팅된 워크가 없습니다.
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            blogLinks.map((link, index) => (
+              <TableRow
+                key={link.id}
+                className="transition-colors hover:bg-muted/50"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <TableCell className="font-medium text-center">{index + 1}</TableCell>
+                <TableCell className="max-w-[200px] truncate">
+                  <a
+                    href={link.blogLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {link.blogLink}
+                  </a>
+                </TableCell>
+                <TableCell className="text-center">{link.product}</TableCell>
+                <TableCell className="text-center text-muted-foreground">{link.executionTime}</TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogDetail(link.id);
+                    }}
+                    className="text-xs h-8 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    상세보기
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge className={statusStyles[link.status]}>
+                    {link.status}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

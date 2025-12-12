@@ -1,9 +1,8 @@
-// src/pages/Login.tsx
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "@/components/common/Header";
+import { Footer } from "@/components/common/Footer";
 
 export default function Login() {
   const { login } = useAuth();
@@ -67,6 +66,16 @@ export default function Login() {
               >
                 <span className="font-bold mr-2 text-lg">N</span>
                 Naver로 로그인
+              </Button>
+
+              <Button
+                onClick={() => login('kakao')}
+                className="w-full h-11 text-base bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] font-medium"
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 3C6.48 3 2 6.58 2 11c0 2.91 1.92 5.45 4.78 7.02l-1.14 4.18c-.12.44.36.8.75.56l5.11-3.12c.49.06.99.1 1.5.1 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+                </svg>
+                Kakao로 로그인
               </Button>
 
               <div className="pt-4 text-center text-xs text-muted-foreground">

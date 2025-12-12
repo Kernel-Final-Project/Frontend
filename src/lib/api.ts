@@ -1,4 +1,3 @@
-// src/lib/api.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -57,10 +56,10 @@ apiClient.interceptors.response.use(
       switch (status) {
         case 401:
           console.error('[401 Unauthorized]', url, '- 인증이 필요합니다');
-          
+
           // 로그인 페이지가 아닌 경우에만 리다이렉트
-          if (!window.location.pathname.includes('/login') && 
-              !window.location.pathname.includes('/oauth2/callback')) {
+          if (!window.location.pathname.includes('/login') &&
+            !window.location.pathname.includes('/oauth2/callback')) {
             window.location.href = '/login';
           }
           break;

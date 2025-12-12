@@ -4,8 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import Workflows from "./pages/Workflows";
-import WorkManagement from "./pages/WorkManagement";
+import Workflows from "./pages/workflow/Workflows";
+import AddWorkflow from "./pages/workflow/AddWorkflow";
+import WorkManagement from "./pages/workflow/WorkManagement";
 import LogDetail from "./pages/LogDetail";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -25,27 +26,38 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-
-            {/* 보호된 라우트 */}
             <Route path="/" element={
               <Index />
             } />
-            {/* <Route path="/work/:id" element={
-              <ProtectedRoute>
-                <WorkManagement />
-              </ProtectedRoute>
-            } />
+            <Route path="/login" element={<Login />} />
+            <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+
             <Route path="/work/:workId/log/:logId" element={
               <ProtectedRoute>
                 <LogDetail />
               </ProtectedRoute>
-            } /> */}
-
-            <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
-            <Route path="/work/:id" element={<ProtectedRoute><WorkManagement /></ProtectedRoute>} />
-            <Route path="/work/:workId/log/:logId" element={<ProtectedRoute><LogDetail /></ProtectedRoute>} />
+            } />
+            <Route path="/workflows" element={
+              <ProtectedRoute>
+                <Workflows />
+              </ProtectedRoute>
+            } />
+            <Route path="/workflows/add" element={
+              <ProtectedRoute>
+                <AddWorkflow />
+              </ProtectedRoute>
+            } />
+            <Route path="/workflows/edit/:id" element={
+              <ProtectedRoute>
+                <AddWorkflow />
+              </ProtectedRoute>
+            } />
+            <Route path="/work/:id" element={
+              <ProtectedRoute>
+                <WorkManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<NotFound />} />
             <Route path="/notices" element={<NoticeListPage />} />
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
             <Route path="*" element={<NotFound />} />

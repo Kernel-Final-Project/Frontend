@@ -37,7 +37,7 @@ export const authService = {
   },
 
   // OAuth2 로그인 URL 생성
-  getOAuth2LoginUrl(provider: 'google' | 'naver'): string {
+  getOAuth2LoginUrl(provider: 'google' | 'naver' | 'kakao'): string {
     // Vite 프록시를 통해 요청하도록 상대 경로 사용
     return `/oauth2/authorization/${provider}`;
   },
