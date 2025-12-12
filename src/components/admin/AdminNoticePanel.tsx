@@ -33,7 +33,7 @@ export function AdminNoticePanel({ notices, loading, error, onCreate, onEdit, on
         </div>
         <CardTitle className="text-xl">공지목록</CardTitle>
         <p className="text-sm text-muted-foreground">
-          중요 공지를 상단에 고정하며, 추후 등록/수정/삭제 기능이 추가될 영역입니다.
+          중요 공지를 상단에 고정하며, 추후 등록/수정/삭제 기능
         </p>
       </CardHeader>
       <CardContent className="p-0">

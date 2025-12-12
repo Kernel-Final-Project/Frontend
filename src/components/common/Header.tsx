@@ -32,7 +32,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2">
           <img
@@ -120,7 +120,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-background border-b border-border animate-fade-in">
+        <div className="md:hidden bg-background border-b border-border">
           <nav className="container py-4 flex flex-col gap-3">
             {isAuthenticated && user && (
               <div className="flex items-center gap-3 pb-3 border-b border-border">
