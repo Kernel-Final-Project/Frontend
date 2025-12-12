@@ -18,7 +18,7 @@ const WorkManagement = () => {
   const workflowId = Number(id);
 
   // 이전 페이지에서 전달받은 워크플로우 데이터
-  const workflowFromState = location.state?.Workflow as Workflow | undefined;
+  const workflowFromState = location.state?.workflow as Workflow | undefined;
 
   const [workflow, setWorkflow] = useState<WorkflowDetailResponse | null>();
   const [works, setWorks] = useState<Work[]>([]);

@@ -46,46 +46,25 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
 
   // 날짜 변경 시 value 업데이트 및 유효성 검사
   useEffect(() => {
-    if (startDate) {
-      // 종료 날짜가 시작 날짜보다 이전인 경우 경고
-      if (endDate && endDate < startDate) {
-        toast({
-          title: "날짜 오류",
-          description: "종료 날짜는 시작 날짜보다 늦어야 합니다.",
-          variant: "destructive",
-        });
-        // 종료 날짜를 시작 날짜와 같게 설정
-        setEndDate(startDate);
-        return;
-      }
-
-      onChange({
-        ...value,
-        startAt: startDate.toISOString(),
+    if (startDate && endDate && endDate < startDate) {
+      toast({
+        title: "날짜 오류",
+        description: "종료 날짜는 시작 날짜보다 늦어야 합니다.",
+        variant: "destructive",
       });
+      // 종료 날짜를 시작 날짜로 재설정합니다.
+      setEndDate(startDate);
+      // endDate 상태 변경 후 다음 렌더링에서 이 useEffect가 다시 실행되므로 여기서 종료합니다.
+      return;
     }
-  }, [startDate]);
 
-  useEffect(() => {
-    if (endDate) {
-      // 종료 날짜가 시작 날짜보다 이전인 경우 경고
-      if (startDate && endDate < startDate) {
-        toast({
-          title: "날짜 오류",
-          description: "종료 날짜는 시작 날짜보다 늦어야 합니다.",
-          variant: "destructive",
-        });
-        // 종료 날짜를 시작 날짜로 재설정
-        setEndDate(startDate);
-        return;
-      }
-
-      onChange({
-        ...value,
-        endAt: endDate.toISOString(),
-      });
-    }
-  }, [endDate]);
+    onChange({
+      ...value,
+      startAt: startDate ? startDate.toISOString() : new Date().toISOString(),
+      endAt: endDate ? endDate.toISOString() : null,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate, onChange]);
 
   const handleRepeatTypeChange = (type: RepeatType) => {
     onChange({

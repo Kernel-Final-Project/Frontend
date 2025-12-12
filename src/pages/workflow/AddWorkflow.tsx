@@ -108,7 +108,9 @@ const AddWorkflow = () => {
     setSelectedBlogTypeId(workflowData.blogTypeId);
 
     // 카테고리 세팅 (depth3Category가 가장 깊은 ID)
-    const depth3Id = workflowData.setTrendCategory.depth3Category;
+    const depth3Id = workflowData.setTrendCategory.depth3Category ?? workflowData.setTrendCategory.depth2Category ?? workflowData.setTrendCategory.depth1Category;
+
+    if (!depth3Id) return;
 
     const { first, second, third } = findCategory(depth3Id);
 
@@ -164,9 +166,12 @@ const AddWorkflow = () => {
       return toast({ title: "반복 규칙 오류", description: ruleError, variant: "destructive" });
     }
 
+    const selectedBlogType = blogTypes.find(bt => bt.blogTypeId === selectedBlogTypeId);
+
     const req: WorkflowRequest = {
       siteUrl,
       blogTypeId: selectedBlogTypeId,
+      blogTypeName: selectedBlogType?.blogTypeName ?? '',
       blogUrl,
       categoryId: selectedCategoryId,
       blogAccountId: blogId,

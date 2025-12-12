@@ -83,7 +83,7 @@ export function ScheduleDialog({
                     <p className="flex gap-2 text-sm items-center ">
                       <Calendar className="w-4 h-4" />
                       <span className="font-medium ">
-                        {workflow.recurrenceRule.startAt.split("T")[0]}{' ~ '}{workflow.recurrenceRule.endAt.split("T")[0]}
+                        {workflow.recurrenceRule.startAt.split("T")[0]}{workflow.recurrenceRule.endAt ? ` ~ ${workflow.recurrenceRule.endAt.split("T")[0]}` : ''}
                       </span>
                       &nbsp;&nbsp;&nbsp;&nbsp;
                       <Repeat className="w-4 h-4 ml-3" />
