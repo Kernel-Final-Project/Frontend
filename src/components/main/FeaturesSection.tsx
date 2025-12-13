@@ -1,75 +1,60 @@
-import automationImg from "@/assets/automation.jpg";
-import optimizationImg from "@/assets/optimization.jpg";
-import efficiencyImg from "@/assets/efficiency.jpg";
+import { Zap, TrendingUp, Sparkles } from "lucide-react";
 
 const features = [
   {
+    icon: <Zap className="w-8 h-8" />,
     title: "Automation",
-    titleKo: "자동화",
-    description:
-      "반복적인 작업을 자동화하여 업무 효율성을 높이고, 인적 오류를 줄여 비즈니스 프로세스를 최적화합니다.",
-    image: automationImg,
-    imagePosition: "left" as const,
+    subtitle: "자동화",
+    description: "반복적인 작업을 자동화하여 업무 생산성을 높이고, 인적 오류를 줄여 비즈니스 프로세스를 최적화합니다.",
+    color: "from-purple-400 to-pink-400"
   },
   {
+    icon: <TrendingUp className="w-8 h-8" />,
     title: "Optimization",
-    titleKo: "최적화",
-    description:
-      "데이터 기반 분석을 통해 비즈니스 프로세스를 최적화하고, 의사결정의 정확도를 높여 경쟁력을 강화합니다.",
-    image: optimizationImg,
-    imagePosition: "right" as const,
+    subtitle: "최적화",
+    description: "데이터 기반 실시간 분석 비즈니스 프로세스를 최적화하고, 의사결정의 정확도를 높여 경쟁력을 강화합니다.",
+    color: "from-blue-400 to-cyan-400"
   },
   {
+    icon: <Sparkles className="w-8 h-8" />,
     title: "Efficiency",
-    titleKo: "효율성",
-    description:
-      "스마트한 리소스 관리와 프로세스 개선을 통해 운영 비용을 절감하고 생산성을 극대화합니다.",
-    image: efficiencyImg,
-    imagePosition: "left" as const,
-  },
+    subtitle: "효율성",
+    description: "스마트한 워크플로 관리와 프로세스 개선을 통해 운영 비용을 절감하고 성과를 극대화 합니다.",
+    color: "from-green-400 to-emerald-400"
+  }
 ];
 
 export function FeaturesSection() {
   return (
-    <section id="products" className="py-20 lg:py-28 bg-background">
-      <div className="container">
-        <div className="space-y-16">
-          {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className={`flex flex-col gap-8 ${
-                feature.imagePosition === "right"
-                  ? "lg:flex-row-reverse"
-                  : "lg:flex-row"
-              } items-center`}
-            >
-              {/* Image */}
-              <div className="w-full lg:w-1/2">
-                <div className="overflow-hidden rounded-xl shadow-card">
-                  <img
-                    src={feature.image}
-                    alt={feature.title}
-                    className="w-full h-64 lg:h-80 object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-              </div>
+      <section className="py-20 lg:py-28 bg-background">
+        <div className="container">
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+                <div
+                    key={index}
+                    className="group relative bg-white rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-border"
+                    style={{
+                      animationDelay: `${index * 100}ms`
+                    }}
+                >
+                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform`}>
+                    {feature.icon}
+                  </div>
 
-              {/* Content */}
-              <div className="w-full lg:w-1/2 lg:px-8">
-                <div className="animate-fade-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-foreground">
-                    {feature.title}{" "}
-                    <span className="text-primary">{feature.titleKo}</span>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {feature.title}{' '}
+                    <span className="text-blue-600">{feature.subtitle}</span>
                   </h3>
-                  <p className="mt-4 text-muted-foreground leading-relaxed">
+
+                  <p className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
+
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity`}></div>
                 </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 }
