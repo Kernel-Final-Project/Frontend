@@ -32,7 +32,7 @@ export function Header({ onLoginClick }: HeaderProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
