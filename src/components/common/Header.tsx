@@ -87,7 +87,6 @@ export function Header({ onLoginClick }: HeaderProps) {
                   )}
                   <div className="text-left">
                     <p className="text-sm font-medium text-foreground">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.provider}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
