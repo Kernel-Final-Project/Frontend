@@ -17,6 +17,7 @@ import NoticeDetailPage from "./pages/notices/NoticeDetailPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import NoticeCreatePage from "./pages/admin/NoticeCreatePage";
 import NoticeEditPage from "./pages/admin/NoticeEditPage";
+import MyPage from "./pages/MyPage";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,11 @@ const App = () => (
             <Route path="/workflows/edit/:id" element={
               <ProtectedRoute>
                 <AddWorkflow />
+              </ProtectedRoute>
+            } />
+            <Route path="/mypage" element={
+              <ProtectedRoute>
+                <MyPage />
               </ProtectedRoute>
             } />
             <Route path="/work/:id" element={

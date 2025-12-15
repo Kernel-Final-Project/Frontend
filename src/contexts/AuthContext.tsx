@@ -1,12 +1,12 @@
 // src/contexts/AuthContext.tsx
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { authService, User } from '@/services/authService';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (provider: 'google' | 'naver') => void;
+  login: (provider: 'google' | 'naver' | 'kakao') => void;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
 }
@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // 사용자 정보 가져오기
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setIsLoading(true);
       const userData = await authService.getCurrentUser();
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // 최초 마운트 시 사용자 정보 로드
   useEffect(() => {
@@ -37,29 +37,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // OAuth2 로그인
-  const login = (provider: 'google' | 'naver' | 'kakao') => {
+  const login = useCallback((provider: 'google' | 'naver' | 'kakao') => {
     const loginUrl = authService.getOAuth2LoginUrl(provider);
     window.location.href = loginUrl;
-  };
+  }, []);
 
   // 로그아웃
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authService.logout();
       setUser(null);
     } catch (error) {
       console.error('로그아웃 실패:', error);
     }
-  };
+  }, []);
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     user,
     isLoading,
     isAuthenticated: !!user,
     login,
     logout,
     refetchUser: fetchUser,
-  };
+  }), [user, isLoading, login, logout, fetchUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -111,9 +111,6 @@ export function AdminUserStatsControls({
           </div>
         </div>
       </div>
-      <Button variant="outline" onClick={onReset}>
-        기본 범위로 초기화
-      </Button>
     </div>
   );
 }
