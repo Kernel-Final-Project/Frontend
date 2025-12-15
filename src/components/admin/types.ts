@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
-export type AdminSection = "notice" | "user" | "code";
+export type AdminSection = "notice" | "user" | "code" | "stats";
 
 export type AdminNavItem = {
   id: AdminSection;
@@ -25,3 +25,29 @@ export type AdminUser = {
   status: string;
   createdAt: string;
 };
+
+export type UserStatPoint = {
+  statDate?: string;
+  weekNumber?: number;
+  weekPeriod?: string;
+  month?: number | string;
+  monthPeriod?: string;
+  totalUsers: number;
+  userGrowthRate: number;
+  activeUsersToday?: number;
+  activeUsers?: number;
+  activeUserGrowthRate: number;
+};
+
+export type Granularity = "daily" | "weekly" | "monthly";
+
+export type NormalizedUserStatPoint = {
+  label: string;
+  totalUsers: number;
+  userGrowthRate: number;
+  activeUsers: number;
+  activeUserGrowthRate: number;
+};
+
+export type DailyRange = { start: string; end: string };
+export type WeeklyPeriod = { year: number; month: number };

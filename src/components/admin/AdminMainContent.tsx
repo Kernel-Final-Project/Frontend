@@ -3,6 +3,7 @@ import { AdminPlaceholderPanel } from "./AdminPlaceholderPanel";
 import { AdminSection } from "./types";
 import { AdminUserSection } from "./AdminUserSection";
 import { Settings2, Users } from "lucide-react";
+import { AdminUserStatsSection } from "./AdminUserStatsSection";
 
 type AdminMainContentProps = {
   section: AdminSection;
@@ -15,6 +16,10 @@ export function AdminMainContent({ section }: AdminMainContentProps) {
 
   if (section === "user") {
     return <AdminUserSection active />;
+  }
+
+  if (section === "stats") {
+    return <AdminUserStatsSection active />;
   }
 
   return (

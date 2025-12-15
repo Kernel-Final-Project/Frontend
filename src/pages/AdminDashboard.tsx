@@ -3,12 +3,13 @@ import { Header } from "@/components/common/Header";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminMainContent } from "@/components/admin/AdminMainContent";
 import { AdminNavItem, AdminSection } from "@/components/admin/types";
-import { ClipboardList, Settings2, Users } from "lucide-react";
+import { ClipboardList, Settings2, Users, BarChart3 } from "lucide-react";
 
 const adminNav: AdminNavItem[] = [
     { id: "notice", label: "공지사항 관리", description: "공지 등록/수정/삭제", icon: ClipboardList },
     { id: "user", label: "사용자 관리", description: "권한/계정 관리", icon: Users },
     { id: "code", label: "공통 코드 관리", description: "카테고리 코드 관리", icon: Settings2 },
+    { id: "stats", label: "사용자 통계", description: "가입/활성 사용자 추이", icon: BarChart3 },
 ];
 
 export default function AdminDashboard() {

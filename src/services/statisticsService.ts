@@ -1,0 +1,22 @@
+import api from "@/lib/api";
+import { Granularity, UserStatPoint } from "@/components/admin/types";
+
+export const statisticsService = {
+  async getUserStats(
+    params:
+      | { granularity: "daily"; startDate: string; endDate: string }
+      | { granularity: "weekly"; year: number; month: number }
+      | { granularity: "monthly"; year: number }
+  ) {
+    const { granularity } = params;
+    const query =
+      granularity === "daily"
+        ? { startDate: params.startDate, endDate: params.endDate }
+        : granularity === "weekly"
+        ? { year: params.year, month: params.month }
+        : { year: params.year };
+
+    const res = await api.get(`/api/v1/admin/statistics/${granularity}/users`, { params: query });
+    return (res.data?.data as UserStatPoint[]) ?? [];
+  },
+};
