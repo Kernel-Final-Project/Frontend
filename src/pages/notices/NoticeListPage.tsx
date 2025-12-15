@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/common/Header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Table,
@@ -29,6 +30,7 @@ type Notice = {
 
 export default function NoticeListPage() {
     const [query, setQuery] = useState("");
+    const [searchText, setSearchText] = useState("");
     const [notices, setNotices] = useState<Notice[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -110,15 +112,26 @@ export default function NoticeListPage() {
                     style={{ animationDelay: "0.05s" }}
                 >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="relative w-full sm:max-w-sm">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="제목, 카테고리, 작성자 검색"
-                                className="pl-10"
-                            />
-                        </div>
+                        <form
+                            className="relative w-full sm:max-w-sm flex gap-2"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                setQuery(searchText);
+                            }}
+                        >
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    placeholder="제목, 카테고리, 작성자 검색"
+                                    className="pl-10"
+                                />
+                            </div>
+                            <Button type="submit" variant="outline">
+                                검색
+                            </Button>
+                        </form>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                             <span>전체 {notices.length}건</span>
                             <span className="hidden h-4 w-px bg-border sm:inline-block" />

@@ -21,14 +21,18 @@ const navItems = [
   { label: "공지사항", href: "/notices" }
 ];
 
-export function Header() {
+type HeaderProps = {
+  onLoginClick?: () => void;
+};
+
+export function Header({ onLoginClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -107,7 +111,15 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button onClick={() => navigate('/login')}>
+            <Button
+              onClick={() => {
+                if (onLoginClick) {
+                  onLoginClick();
+                } else {
+                  navigate('/', { state: { loginRequired: true } });
+                }
+              }}
+            >
               로그인
             </Button>
           )}
@@ -186,7 +198,17 @@ export function Header() {
                 </Button>
               </>
             ) : (
-              <Button onClick={() => navigate('/login')} className="mt-2">
+              <Button
+                onClick={() => {
+                  if (onLoginClick) {
+                    onLoginClick();
+                    setIsMenuOpen(false);
+                  } else {
+                    navigate('/', { state: { loginRequired: true } });
+                  }
+                }}
+                className="mt-2"
+              >
                 로그인
               </Button>
             )}
