@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (provider: 'google' | 'naver') => void;
+  login: (provider: 'google' | 'naver' | 'kakao') => void;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
 }
