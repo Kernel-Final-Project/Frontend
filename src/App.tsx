@@ -11,7 +11,6 @@ import LogDetail from "./pages/LogDetail";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import OAuth2Callback from "./pages/OAuth2Callback";
-import Login from "./pages/Login";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import NoticeListPage from "./pages/notices/NoticeListPage";
 import NoticeDetailPage from "./pages/notices/NoticeDetailPage";
@@ -32,7 +31,6 @@ const App = () => (
             <Route path="/" element={
               <Index />
             } />
-            <Route path="/login" element={<Login />} />
             <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
             <Route path="/work/:workId/log/:logId" element={

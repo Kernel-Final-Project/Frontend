@@ -57,10 +57,14 @@ apiClient.interceptors.response.use(
         case 401:
           console.error('[401 Unauthorized]', url, '- 인증이 필요합니다');
 
-          // 로그인 페이지가 아닌 경우에만 리다이렉트
-          if (!window.location.pathname.includes('/login') &&
-            !window.location.pathname.includes('/oauth2/callback')) {
-            window.location.href = '/login';
+          // /api/v1/auth/me는 인증 확인용이므로 리다이렉트하지 않음
+          if (url?.includes('/api/v1/auth/me')) {
+            break;
+          }
+
+          // OAuth2 콜백이 아닌 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/oauth2/callback')) {
+            window.location.href = '/?loginRequired=true';
           }
           break;
 
