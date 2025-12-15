@@ -21,7 +21,7 @@ export function AdminUserStatsChart({ data }: Props) {
             <Tooltip formatter={(value: number) => value.toLocaleString()} contentStyle={{ borderRadius: 8, borderColor: "hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line type="monotone" dataKey="totalUsers" name="총 사용자" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="activeUsers" name="활성 사용자" stroke="#f59e0b" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="activeUsers" name="활성 사용자" stroke="hsl(var(--status-warning))" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

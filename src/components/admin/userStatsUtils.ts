@@ -32,34 +32,24 @@ export const normalizeUserStats = (granularity: Granularity, rows: UserStatPoint
   };
 
   return rows.map((row, idx) => {
-    if (granularity === "daily") {
-      return {
-        label: row.statDate ?? `일자-${idx + 1}`,
-        totalUsers: toNumber(row.totalUsers),
-        userGrowthRate: toNumber(row.userGrowthRate),
-        activeUsers: toNumber(row.activeUsersToday ?? row.activeUsers),
-        activeUserGrowthRate: toNumber(row.activeUserGrowthRate),
-      };
+    let label: string;
+    switch (granularity) {
+      case "daily":
+        label = row.statDate ?? `일자-${idx + 1}`;
+        break;
+      case "weekly":
+        label = row.weekPeriod ?? (row.weekNumber !== undefined ? `W${row.weekNumber}` : `주차-${idx + 1}`);
+        break;
+      default:
+        label = row.monthPeriod ?? (row.month !== undefined ? `${row.month}` : row.statDate ?? `월-${idx + 1}`);
+        break;
     }
 
-    if (granularity === "weekly") {
-      const label = row.weekPeriod ?? (row.weekNumber !== undefined ? `W${row.weekNumber}` : `주차-${idx + 1}`);
-      return {
-        label,
-        totalUsers: toNumber(row.totalUsers),
-        userGrowthRate: toNumber(row.userGrowthRate),
-        activeUsers: toNumber(row.activeUsers ?? row.activeUsersToday),
-        activeUserGrowthRate: toNumber(row.activeUserGrowthRate),
-      };
-    }
-
-    // monthly
-    const label = row.monthPeriod ?? (row.month !== undefined ? `${row.month}` : row.statDate ?? `월-${idx + 1}`);
     return {
       label,
       totalUsers: toNumber(row.totalUsers),
       userGrowthRate: toNumber(row.userGrowthRate),
-      activeUsers: toNumber(row.activeUsers ?? row.activeUsersToday),
+      activeUsers: toNumber(row.activeUsersToday ?? row.activeUsers),
       activeUserGrowthRate: toNumber(row.activeUserGrowthRate),
     };
   });
