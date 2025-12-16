@@ -86,7 +86,7 @@ export function BlogLinkTable({ blogLinks, onLogDetail, onStatsDetail }: BlogLin
                   </Button>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge className={statusStyles[link.status]}>
+                  <Badge className={statusStyles[link.statusDisplay]}>
                     {link.status}
                   </Badge>
                 </TableCell>

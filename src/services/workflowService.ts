@@ -31,16 +31,31 @@ export interface Workflow {
   trendCategoryName: string;
   blogAccountId: string;
   readableRule: string;
-  status: 'ACTIVE' | 'PENDING' | 'INACTIVE';
+  status: 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'DELETED' | 'COMPLETED';
   recurrenceRule?: RecurrenceRule;  // 선택적 (응답에서 id와 readableRule 포함)
+}
+
+export interface WorkflowEditResponse {
+  workflowId: number;
+  userId: number;
+  siteUrl: string;
+  siteName?: string;
+  blogTypeId: number;
+  blogTypeName: string;
+  blogUrl: string;
+  blogAccountId: string;
+  recurrenceRule: RecurrenceRule;
+  setTrendCategory: TrendCategory;
 }
 
 export interface WorkflowDetailResponse {
   workflowId: number;
   userId: number;
+  userName?: string;
+  status: string;
   siteUrl: string;
-  blogTypeId: number;
-  blogTypeName: string;
+  siteName?: string;
+  blogType: string;
   blogUrl: string;
   blogAccountId: string;
   recurrenceRule: RecurrenceRule;
@@ -126,7 +141,13 @@ export const workflowService = {
     return response.data;
   },
 
-  // 워크플로우 단건 조회
+  // 워크플로우 단건 조회(수정용)
+  async getWorkflowByIdEdit(id: number): Promise<ApiResponse<WorkflowEditResponse>> {
+    const response = await api.get(`/api/v1/workflow/${id}/edit`);
+    return response.data;
+  },
+
+  // 워크플로우 단건 조회(조회용)
   async getWorkflowById(id: number): Promise<ApiResponse<WorkflowDetailResponse>> {
     const response = await api.get(`/api/v1/workflow/${id}`);
     return response.data;
@@ -156,15 +177,32 @@ export const workflowService = {
     return response.data;
   },
 
+  // 트렌드 카테고리 가져오기
   async getTrendCategory(): Promise<ApiResponse<Category[]>> {
     const response = await api.get("/api/v1/workflow/trend-category")
 
     return response.data;
   },
 
+  // 블로그 유형 가져오기
   async getBlogTypes(): Promise<ApiResponse<BlogType[]>> {
     const response = await api.get("/api/v1/workflow/blog-type")
 
+    return response.data;
+  },
+
+  // 관리자 - 전체 워크플로우 목록 조회 (페이지네이션, 사용자 필터링 옵션)
+  async getWorkflowsForAdmin(page: number = 0, userId?: number): Promise<ApiResponse<WorkflowPageResponse>> {
+    const params = new URLSearchParams({ page: page.toString() });
+    if (userId !== undefined) {
+      params.append('userId', userId.toString());
+    }
+    const response = await api.get(`/api/v1/admin/workflow?${params.toString()}`);
+    return response.data;
+  },
+
+  async generateTestContent(workflowId: number): Promise<ApiResponse<void>> {
+    const response = await api.post(`/api/v1/test/${workflowId}/content-generate`);
     return response.data;
   }
 };

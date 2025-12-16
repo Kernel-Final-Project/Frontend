@@ -8,16 +8,29 @@ import { Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { workflowService, Workflow } from '@/services/workflowService';
 import { ScheduleDialog } from "@/components/workflow/ScheduleDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Workflows = () => {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [selectedWorkflowSchedule, setSelectedWorkflowSchedule] = useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [workflowToDelete, setWorkflowToDelete] = useState<number | null>(null);
 
   // 워크플로우 목록 불러오기
   const fetchWorkflows = async (page: number) => {
@@ -28,6 +41,7 @@ const Workflows = () => {
       if (response.success) {
         setWorkflows(response.data.content);
         setTotalPages(response.data.totalPages);
+        setTotalElements(response.data.totalElements);
       }
     } catch (error) {
       console.error("워크플로우 목록 조회 실패:", error);
@@ -57,13 +71,16 @@ const Workflows = () => {
     navigate(`/workflows/edit/${id}`);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("정말 삭제하시겠습니까?")) {
-      return;
-    }
+  const handleDelete = (id: number) => {
+    setWorkflowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!workflowToDelete) return;
 
     try {
-      const response = await workflowService.deleteWorkflow(id);
+      const response = await workflowService.deleteWorkflow(workflowToDelete);
 
       if (response.success) {
         toast({
@@ -86,6 +103,9 @@ const Workflows = () => {
         description: "워크플로우 삭제에 실패했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setWorkflowToDelete(null);
     }
   };
 
@@ -101,7 +121,10 @@ const Workflows = () => {
         </div>
 
         {/* Action Bar */}
-        <div className="flex justify-end mb-6" >
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm text-muted-foreground">
+            전체 {totalElements}건
+          </div>
           <Button className="gap-2" onClick={() => navigate("/workflows/add")}>
             <Plus className="w-4 h-4" />
             등록
@@ -148,6 +171,29 @@ const Workflows = () => {
           currentSchedule={selectedWorkflowSchedule}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>워크플로우 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말로 이 워크플로우를 삭제하시겠습니까?
+              <br />
+              삭제된 워크플로우는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

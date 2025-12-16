@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Loader2, Users } from "lucide-react";
+import { AlertCircle, Loader2, Users, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AdminUser } from "./types";
 import { userService } from "@/services/userService";
 import { AdminUserTable } from "./AdminUserTable";
@@ -11,13 +12,15 @@ import { AdminUserDetailModal } from "./AdminUserDetailModal";
 
 type AdminUserSectionProps = {
   active: boolean;
+  onNavigateToWorkflow?: (userId: number, userName: string) => void;
 };
 
-export function AdminUserSection({ active }: AdminUserSectionProps) {
+export function AdminUserSection({ active, onNavigateToWorkflow }: AdminUserSectionProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -53,12 +56,22 @@ export function AdminUserSection({ active }: AdminUserSectionProps) {
   }, [active]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (!q) return users;
     return users.filter(
       (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q),
     );
-  }, [users, query]);
+  }, [users, searchQuery]);
+
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <>
@@ -73,12 +86,23 @@ export function AdminUserSection({ active }: AdminUserSectionProps) {
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="이름으로 검색"
-              className="w-full sm:w-64"
-            />
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="이름으로 검색"
+                className="w-full sm:w-64"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleSearch}
+                className="flex-shrink-0"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">
               총 {users.length}명
             </Badge>
@@ -105,6 +129,7 @@ export function AdminUserSection({ active }: AdminUserSectionProps) {
                 setSelectedUserId(id);
                 setDetailOpen(true);
               }}
+              onViewWorkflows={onNavigateToWorkflow}
             />
           )}
         </CardContent>

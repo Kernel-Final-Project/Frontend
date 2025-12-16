@@ -7,7 +7,7 @@ import { Pagination } from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { workflowService, Workflow, WorkflowDetailResponse } from "@/services/workflowService";
+import { workflowService, WorkflowDetailResponse, Workflow } from "@/services/workflowService";
 import { workService, Work } from "@/services/workService";
 import { convertWorkToBlogLink } from "@/utils/workUtils";
 
@@ -17,10 +17,10 @@ const WorkManagement = () => {
   const location = useLocation();
   const workflowId = Number(id);
 
-  // 이전 페이지에서 전달받은 워크플로우 데이터
-  const workflowFromState = location.state?.workflow as Workflow | undefined;
+  // location.state에서 workflow 가져오기 (WorkflowTable에서 전달)
+  const passedWorkflow = location.state?.workflow as Workflow | undefined;
 
-  const [workflow, setWorkflow] = useState<WorkflowDetailResponse | null>();
+  const [workflow, setWorkflow] = useState<WorkflowDetailResponse | null>(null);
   const [works, setWorks] = useState<Work[]>([]);
   const [currentPage, setCurrentPage] = useState(0); // 백엔드는 0부터 시작
   const [totalPages, setTotalPages] = useState(0);
@@ -29,11 +29,32 @@ const WorkManagement = () => {
 
   // 초기 데이터 로드
   useEffect(() => {
-    if (workflowFromState) {
-      // 이전 페이지에서 데이터를 받은 경우 바로 Work 목록만 로드
+    if (passedWorkflow) {
+      // WorkflowTable에서 전달받은 데이터가 있으면 바로 사용 (API 호출 생략)
+      // Workflow 타입을 WorkflowDetailResponse 형태로 변환
+      const convertedWorkflow: WorkflowDetailResponse = {
+        workflowId: passedWorkflow.workflowId,
+        userId: passedWorkflow.userId,
+        siteUrl: passedWorkflow.siteUrl,
+        blogType: passedWorkflow.blogType,
+        blogUrl: passedWorkflow.blogUrl,
+        blogAccountId: passedWorkflow.blogAccountId,
+        recurrenceRule: passedWorkflow.recurrenceRule || {
+          repeatType: 'ONCE',
+          startAt: new Date().toISOString(),
+        },
+        setTrendCategory: {
+          depth1Category: 0, // Workflow 타입에는 없음
+          depth2Category: null,
+          depth3Category: null,
+          mainCategoryName: passedWorkflow.trendCategoryName,
+        },
+        status: passedWorkflow.status,
+      };
+      setWorkflow(convertedWorkflow);
       fetchWorks(0);
     } else {
-      // 직접 URL로 접근한 경우 워크플로우 정보도 가져오기
+      // 직접 URL 접근 시에는 API 호출
       fetchWorkflowInfo();
     }
   }, [workflowId]);
@@ -108,8 +129,7 @@ const WorkManagement = () => {
   const workflowInfo = workflow ? {
     id: workflow.workflowId,
     url: workflow.siteUrl,
-    blogId: workflow.blogTypeId,
-    blogName: workflow.blogTypeName,
+    blogName: workflow.blogType,
     firstCategory: workflow.setTrendCategory.depth1Category,
     secondCategory: workflow.setTrendCategory.depth2Category,
     thirdCategory: workflow.setTrendCategory.depth3Category,
@@ -125,10 +145,11 @@ const WorkManagement = () => {
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">워크 관리</h1>
+          <p className="mt-1 text-muted-foreground">워크플로우별 발행된 워크를 확인하세요</p>
         </div>
 
-        {/* Back Button */}
-        <div className="mb-6">
+        {/* Back Button and Count */}
+        <div className="flex justify-between items-center mb-6">
           <Button
             variant="ghost"
             size="icon"

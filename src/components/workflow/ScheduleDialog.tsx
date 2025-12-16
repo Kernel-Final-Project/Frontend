@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { workflowService, Workflow, WorkflowDetailResponse } from "@/services/workflowService";
+import { workflowService, WorkflowDetailResponse } from "@/services/workflowService";
 import { getNextExecutionDates } from "@/utils/recurrenceRuleHelper";
 import { toast } from "@/hooks/use-toast";
 
@@ -78,8 +78,11 @@ export function ScheduleDialog({
               {/* 반복 규칙 요약 */}
               {workflow?.recurrenceRule && (
                 <div className="rounded-lg border border-border bg-muted/50 p-4">
-                  <Label className="text-sm font-medium mb-1.5 block">반복 규칙</Label>
+                  <Label className="text-sm font-medium mb-1.5 block">반복 규칙 | {workflow.recurrenceRule.readableRule}</Label>
                   <div className="space-y-1 text-sm">
+                    <span className="font-medium text-foreground">
+
+                    </span>
                     <p className="flex gap-2 text-sm items-center ">
                       <Calendar className="w-4 h-4" />
                       <span className="font-medium ">

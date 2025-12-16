@@ -1,21 +1,50 @@
 import { AdminNoticeSection } from "./AdminNoticeSection";
 import { AdminPlaceholderPanel } from "./AdminPlaceholderPanel";
-import { AdminSection } from "./types";
+import { AdminSection, UserFilterInfo, WorkflowFilterInfo } from "./types";
 import { AdminUserSection } from "./AdminUserSection";
-import { Settings2, Users } from "lucide-react";
+import { AdminWorkflowSection } from "./AdminWorkflowSection";
+import { AdminWorkSection } from "./AdminWorkSection";
+import { Settings2 } from "lucide-react";
 import { AdminUserStatsSection } from "./AdminUserStatsSection";
 
 type AdminMainContentProps = {
   section: AdminSection;
+  onSectionChange?: (section: AdminSection, userFilter?: UserFilterInfo, workflowFilter?: WorkflowFilterInfo) => void;
+  userFilter?: UserFilterInfo;
+  workflowFilter?: WorkflowFilterInfo;
 };
 
-export function AdminMainContent({ section }: AdminMainContentProps) {
+export function AdminMainContent({ section, onSectionChange, userFilter, workflowFilter }: AdminMainContentProps) {
   if (section === "notice") {
     return <AdminNoticeSection active />;
   }
 
   if (section === "user") {
-    return <AdminUserSection active />;
+    return (
+      <AdminUserSection
+        active
+        onNavigateToWorkflow={(userId, userName) => {
+          onSectionChange?.("workflow", { userId, userName });
+        }}
+      />
+    );
+  }
+
+  if (section === "workflow") {
+    return (
+      <AdminWorkflowSection
+        key={userFilter?.userId || 'all'}
+        active
+        userFilter={userFilter}
+        onNavigateToWork={(workflowId) => {
+          onSectionChange?.("work", undefined, { workflowId });
+        }}
+      />
+    );
+  }
+
+  if (section === "work") {
+    return <AdminWorkSection key={workflowFilter?.workflowId || 'all'} active workflowId={workflowFilter?.workflowId} />;
   }
 
   if (section === "stats") {
