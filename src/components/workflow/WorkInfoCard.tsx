@@ -10,7 +10,6 @@ import {
 interface WorkflowInfo {
   id: number;
   url: string;
-  blogId: number;
   blogName: string;
   firstCategory: number;
   secondCategory: number;
@@ -30,9 +29,9 @@ export function WorkInfoCard({ workflow }: WorkInfoCardProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-            <TableHead className="font-semibold text-foreground w-20 text-center">ID</TableHead>
+            <TableHead className="font-semibold text-foreground w-20 text-center">No</TableHead>
             <TableHead className="font-semibold text-foreground text-center">URL</TableHead>
-            <TableHead className="font-semibold text-foreground text-center">블로그 유형</TableHead>
+            <TableHead className="font-semibold text-foreground text-center">블로그</TableHead>
             <TableHead className="font-semibold text-foreground text-center">트렌드 카테고리</TableHead>
             <TableHead className="font-semibold text-foreground w-28 text-center">포스팅 건수</TableHead>
           </TableRow>

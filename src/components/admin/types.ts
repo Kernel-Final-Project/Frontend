@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
-export type AdminSection = "notice" | "user" | "code" | "stats";
+export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats";
 
 export type AdminNavItem = {
   id: AdminSection;
@@ -24,6 +24,15 @@ export type AdminUser = {
   role: string;
   status: string;
   createdAt: string;
+};
+
+export type UserFilterInfo = {
+  userId: number;
+  userName: string;
+};
+
+export type WorkflowFilterInfo = {
+  workflowId: number;
 };
 
 export type UserStatPoint = {
