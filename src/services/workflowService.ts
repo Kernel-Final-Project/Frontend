@@ -32,6 +32,7 @@ export interface Workflow {
   blogAccountId: string;
   readableRule: string;
   status: 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'DELETED' | 'COMPLETED';
+  testStatus: 'NOT_TESTED' | 'TEST_PASSED' | 'TEST_FAILED';
   recurrenceRule?: RecurrenceRule;  // 선택적 (응답에서 id와 readableRule 포함)
 }
 
@@ -53,6 +54,7 @@ export interface WorkflowDetailResponse {
   userId: number;
   userName?: string;
   status: string;
+  testStatus: string;
   siteUrl: string;
   siteName?: string;
   blogType: string;
@@ -203,6 +205,14 @@ export const workflowService = {
 
   async generateTestContent(workflowId: number): Promise<ApiResponse<void>> {
     const response = await api.post(`/api/v1/test/${workflowId}/content-generate`);
+    return response.data;
+  },
+
+  async updateWorkflowStatus(
+    workflowId: number,
+    newStatus: 'ACTIVE' | 'INACTIVE'
+  ): Promise<ApiResponse<void>> {
+    const response = await api.patch(`/api/v1/workflow/${workflowId}/status`, { newStatus });
     return response.data;
   }
 };

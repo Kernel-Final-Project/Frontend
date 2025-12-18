@@ -61,11 +61,11 @@ export function WorkflowTable({ workflows, onSchedule, onEdit, onDelete }: Workf
         <TableHeader>
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
             <TableHead className="font-semibold w-20 text-center">No</TableHead>
-            <TableHead className="font-semibold w-20 text-center ">상태</TableHead>
             <TableHead className="font-semibold w-32 text-center ">사이트</TableHead>
             <TableHead className="font-semibold w-40 text-center">트렌드 카테고리</TableHead>
             <TableHead className="font-semibold w-32 text-center">블로그</TableHead>
             <TableHead className="font-semibold w-40 text-center">블로그 계정</TableHead>
+            <TableHead className="font-semibold w-20 text-center ">상태</TableHead>
             <TableHead className="font-semibold w-32 text-center">관리</TableHead>
           </TableRow>
         </TableHeader>

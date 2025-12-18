@@ -186,7 +186,14 @@ const AddWorkflow = () => {
 
       if (response.success) {
         toast({ title: isEditMode ? "수정 완료" : "등록 완료" });
-        navigate("/workflows");
+        const params = new URLSearchParams(window.location.search);
+        const from = params.get('from');
+
+        if (from === 'admin') {
+          navigate('/admin', { state: { section: 'workflow' } });  // 관리자 워크플로우 섹션으로
+        } else {
+          navigate('/workflows');  // 사용자 워크플로우 목록으로
+        }
       }
     } catch {
       toast({ title: "오류", description: "저장 실패", variant: "destructive" });

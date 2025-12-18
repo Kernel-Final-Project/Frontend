@@ -135,6 +135,16 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
     });
   };
 
+  // 대한민국 현재 시간 기준 2시간 후 계산
+  const getMinimumDateTime = () => {
+    const now = new Date();
+    const koreaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    koreaTime.setHours(koreaTime.getHours() + 2);
+    return koreaTime;
+  };
+
+  const minDateTime = getMinimumDateTime();
+
   return (
     <div className="space-y-6">
       {/* 반복 유형 선택 */}
@@ -192,14 +202,46 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
               실행 시간
               <span className="text-red-500">*</span>
             </Label>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              현재 시간으로부터 2시간 이후부터 실행 가능합니다
+            </p>
             <TimePicker
               value={(value.timesOfDay && value.timesOfDay[0]) || '09:00'}
               onChange={(time) => {
+                // 선택된 날짜가 오늘이면 최소 시간 검증
+                const now = new Date();
+                const koreaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+                const today = new Date(koreaTime);
+                today.setHours(0, 0, 0, 0);
+
+                const selectedDay = new Date(startDate || new Date());
+                selectedDay.setHours(0, 0, 0, 0);
+
+                if (selectedDay.getTime() === today.getTime()) {
+                  const minDateTime = getMinimumDateTime();
+                  const minTimeStr = `${String(minDateTime.getHours()).padStart(2, '0')}:${String(minDateTime.getMinutes()).padStart(2, '0')}`;
+
+                  if (time < minTimeStr) {
+                    toast({
+                      title: "시간 오류",
+                      description: "현재 시간으로부터 2시간 이후의 시간을 선택해주세요.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                }
+
                 onChange({
                   ...value,
                   timesOfDay: [time],
                 });
               }}
+              selectedDate={startDate}
+              minTime={(() => {
+                const minDateTime = getMinimumDateTime();
+                return `${String(minDateTime.getHours()).padStart(2, '0')}:${String(minDateTime.getMinutes()).padStart(2, '0')}`;
+              })()}
             />
           </div>
         </div>
@@ -430,6 +472,12 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
                     mode="single"
                     selected={startDate}
                     onSelect={setStartDate}
+                    disabled={(date) => {
+                      // 오늘보다 이전 날짜는 선택 불가
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return date < today;
+                    }}
                     initialFocus
                   />
                 </PopoverContent>

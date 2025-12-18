@@ -8,14 +8,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
-import { Workflow } from "@/services/workflowService";
+import { ArrowRight, User } from "lucide-react";
+import { Workflow, workflowService } from "@/services/workflowService";
 
 type AdminWorkflowTableProps = {
   workflows: Workflow[];
   onUpdate?: () => void;
   onRowClick?: (workflowId: number) => void;
-  onSelect?: (workflowId: number) => void; // 상세보기용 선택 이벤트
+  onSelect?: (workflowId: number) => void;
+  onOpenUserDetail?: (userId: number) => void;
 };
 
 const statusVariant: Record<
@@ -27,8 +28,10 @@ const statusVariant: Record<
   INACTIVE: "secondary",
   DELETED: "destructive",
   COMPLETED: "success",
+  NOT_TESTED: "outline",
+  TEST_PASSED: "success",
+  TEST_FAILED: "destructive",
 };
-
 
 const statusLabels: Record<string, string> = {
   ACTIVE: "활성",
@@ -36,9 +39,12 @@ const statusLabels: Record<string, string> = {
   INACTIVE: "비활성",
   DELETED: "삭제됨",
   COMPLETED: "완료",
+  NOT_TESTED: "테스트 전",
+  TEST_PASSED: "테스트 통과",
+  TEST_FAILED: "테스트 실패",
 };
 
-export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect }: AdminWorkflowTableProps) {
+export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, onOpenUserDetail }: AdminWorkflowTableProps) {
 
   return (
     <>
@@ -46,14 +52,15 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect }
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-              <TableHead className="font-semibold text-foreground w-16 text-center">No</TableHead>
-              <TableHead className="font-semibold text-foreground w-20 text-center">사용자ID</TableHead>
-              <TableHead className="font-semibold text-foreground">사이트명</TableHead>
-              <TableHead className="font-semibold text-foreground">사이트 URL</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">No</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">사용자ID</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">사이트명</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">사이트 URL</TableHead>
               <TableHead className="font-semibold text-foreground text-center">블로그</TableHead>
               <TableHead className="font-semibold text-foreground text-center">트렌드 카테고리</TableHead>
-              <TableHead className="font-semibold text-foreground w-24 text-center">상태</TableHead>
-              <TableHead className="font-semibold text-foreground w-32 text-center">작업</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">상태</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">테스트 상태</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">작업</TableHead>
             </TableRow>
 
           </TableHeader>
@@ -65,8 +72,12 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect }
                 onClick={() => onSelect?.(workflow.workflowId)}
               >
                 <TableCell className="text-center text-muted-foreground">{index + 1}</TableCell>
+
                 <TableCell className="text-center">
-                  {workflow.userId}
+                  <div className="flex items-center justify-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="font-medium hover:underline">{workflow.userId}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="font-medium">
                   {workflow.siteName}
@@ -90,6 +101,11 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect }
                     className="tracking-tight"
                   >
                     {statusLabels[workflow.status] || workflow.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant={statusVariant[workflow.status]}>
+                    {statusLabels[workflow.status]}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center">

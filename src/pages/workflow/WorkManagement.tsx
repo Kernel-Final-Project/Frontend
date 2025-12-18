@@ -50,6 +50,7 @@ const WorkManagement = () => {
           mainCategoryName: passedWorkflow.trendCategoryName,
         },
         status: passedWorkflow.status,
+        testStatus: passedWorkflow.testStatus,
       };
       setWorkflow(convertedWorkflow);
       fetchWorks(0);
