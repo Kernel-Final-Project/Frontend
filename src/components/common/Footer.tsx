@@ -7,7 +7,7 @@ export function Footer() {
             <img src="/src/assets/logo.png" alt="OCP 로고" className="w-20 h-24 object-contain"/>
             {/* Copyright */}
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} OCP. All rights reserved.
+              © {new Date().getFullYear()} OCP. Allㅎ  rights reserved.
             </p>
           </div>
         </div>
