@@ -1,77 +1,169 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { LogAccordion } from "@/components/LogAccordion";
+import { Badge } from "@/components/ui/badge";
+import { workService, type WorkLogEntry } from "@/services/workService";
 
-const mockLogData = [
-  {
-    id: 1,
-    title: "쇼핑몰 HTML 추출 결과",
-    status: "success" as const,
-    log: `[2025-11-19 08:00:01] 쇼핑몰 페이지 접속 시작...
-[2025-11-19 08:00:02] HTML 문서 다운로드 중...
-[2025-11-19 08:00:03] HTML 파싱 완료
-[2025-11-19 08:00:03] 상품 목록 추출 완료 (총 24개 상품)`,
-    result: "성공적으로 24개의 상품 정보를 추출했습니다.",
-  },
-  {
-    id: 2,
-    title: "트렌드 크롤링 결과",
-    status: "success" as const,
-    log: `[2025-11-19 08:00:04] 구글 트렌드 API 호출 시작...
-[2025-11-19 08:00:05] 키워드 분석 중...
-[2025-11-19 08:00:06] 트렌드 데이터 수집 완료`,
-    result: "상위 10개 트렌드 키워드를 성공적으로 수집했습니다.",
-  },
-  {
-    id: 3,
-    title: "크롤링 코드 생성 결과",
-    status: "success" as const,
-    log: `[2025-11-19 08:00:07] AI 코드 생성 모델 초기화...
-[2025-11-19 08:00:10] 크롤링 스크립트 생성 중...
-[2025-11-19 08:00:15] 코드 검증 완료`,
-    result: "크롤링 코드가 성공적으로 생성되었습니다.",
-  },
-  {
-    id: 4,
-    title: "크롤링 코드 실행 결과",
-    status: "success" as const,
-    log: `[2025-11-19 08:00:16] 크롤링 코드 실행 시작...
-[2025-11-19 08:00:20] 데이터 수집 중...
-[2025-11-19 08:00:25] 실행 완료`,
-    result: "크롤링이 성공적으로 완료되었습니다.",
-  },
-  {
-    id: 5,
-    title: "상품 선택 결과",
-    status: "success" as const,
-    log: `[2025-11-19 08:00:26] 상품 필터링 시작...
-[2025-11-19 08:00:27] 조건에 맞는 상품 선택 중...
-[2025-11-19 08:00:28] 상품 선택 완료`,
-    result: "5개의 상품이 선택되었습니다.",
-  },
-  {
-    id: 6,
-    title: "콘텐츠 생성 결과",
-    status: "progress" as const,
-    log: `[2025-11-19 08:00:29] AI 콘텐츠 생성 시작...
-[2025-11-19 08:00:35] 블로그 포스트 작성 중...
-[2025-11-19 08:00:40] 이미지 생성 중...`,
-    result: "콘텐츠 생성 진행 중입니다...",
-  },
-  {
-    id: 7,
-    title: "콘텐츠 업로드 결과",
-    status: "pending" as const,
-    log: `대기 중...`,
-    result: "이전 단계 완료 후 실행됩니다.",
-  },
-];
+const STEP_NAME_DISPLAY_MAP: Record<string, string> = {
+  요청_수신: "요청 수신",
+  request_received: "요청 수신",
+  상품_크롤링: "상품 크롤링",
+  product_crawling: "상품 크롤링",
+  경로_분기: "경로 분기",
+  branch: "경로 분기",
+  상품_선택: "상품 선택",
+  product_select: "상품 선택",
+  find_product: "상품 선택",
+  generate_content: "콘텐츠 생성",
+};
+
+const HIDDEN_STEP_KEYS = new Set([
+  "send_log_webhook",
+  "send log webhook",
+]);
+
+const MESSAGE_STEP_KEYS = new Set([
+  "상품_크롤링",
+  "product_crawling",
+  "상품_선택",
+  "product_select",
+  "find_product",
+  "generate_content",
+]);
+
+const normalizeKey = (value?: string) =>
+  value?.trim().toLowerCase().replace(/\s+/g, "_") || "";
+
+const getFriendlyStepName = (stepName?: string) => {
+  if (!stepName) return "단계 정보 없음";
+  const normalized = normalizeKey(stepName);
+  if (normalized && STEP_NAME_DISPLAY_MAP[normalized]) {
+    return STEP_NAME_DISPLAY_MAP[normalized];
+  }
+
+  if (stepName.includes("_")) {
+    return stepName
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  return stepName;
+};
+
+const getStatusMeta = (status?: string) => {
+  const key = normalizeKey(status);
+
+  switch (key) {
+    case "성공":
+    case "success":
+      return {
+        label: "성공",
+        className: "bg-emerald-500/10 text-emerald-600 border border-emerald-400/40",
+      };
+    case "진행중":
+    case "progress":
+    case "processing":
+    case "running":
+      return {
+        label: "진행중",
+        className: "bg-amber-500/10 text-amber-600 border border-amber-400/40",
+      };
+    case "대기":
+    case "pending":
+      return {
+        label: "대기",
+        className: "bg-slate-500/10 text-slate-600 border border-slate-400/40",
+      };
+    case "실패":
+    case "failed":
+    case "error":
+      return {
+        label: "실패",
+        className: "bg-rose-500/10 text-rose-600 border border-rose-400/40",
+      };
+    default:
+      return {
+        label: status ?? "확인 필요",
+        className: "bg-muted text-muted-foreground border border-border",
+      };
+  }
+};
+
+const getStatusIndicatorClasses = (status?: string) => {
+  const key = normalizeKey(status);
+
+  switch (key) {
+    case "성공":
+    case "success":
+      return "bg-emerald-500 border-emerald-500";
+    case "진행중":
+    case "progress":
+    case "processing":
+    case "running":
+      return "bg-amber-400 border-amber-400";
+    case "실패":
+    case "failed":
+    case "error":
+      return "bg-rose-500 border-rose-500";
+    case "대기":
+    case "pending":
+      return "bg-slate-400 border-slate-400";
+    default:
+      return "bg-muted border-border";
+  }
+};
+
+const formatTimestamp = (value?: string) => {
+  if (!value) return "시간 정보 없음";
+  const parsed = new Date(value);
+  if (isNaN(parsed.getTime())) {
+    return value.replace("T", " ");
+  }
+
+  return parsed.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
 
 export default function LogDetail() {
   const navigate = useNavigate();
-  const { workId, logId } = useParams();
+  const location = useLocation();
+  const { workId } = useParams();
+  const parentWorkflowId = (location.state as { workflowId?: number } | null)?.workflowId;
+  const numericWorkId = workId ? Number(workId) : undefined;
+  const [collapsedSteps, setCollapsedSteps] = useState<Record<number, boolean>>({});
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    error,
+  } = useQuery({
+    queryKey: ["workLog", numericWorkId],
+    enabled: Boolean(numericWorkId),
+    queryFn: () => workService.getWorkLogs(numericWorkId!),
+  });
+
+  const rawSteps: WorkLogEntry[] = useMemo(() => data?.data ?? [], [data]);
+  const steps: WorkLogEntry[] = useMemo(
+    () =>
+      rawSteps.filter((step) => {
+        const normalized = normalizeKey(step.stepName);
+        return normalized ? !HIDDEN_STEP_KEYS.has(normalized) : true;
+      }),
+    [rawSteps]
+  );
+  const statusMessage = (error as Error | undefined)?.message ?? "로그를 불러오지 못했습니다.";
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,29 +173,139 @@ export default function LogDetail() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate(`/work/${workId}`)}
+          onClick={() => {
+            if (parentWorkflowId) {
+              navigate(`/workflow/${parentWorkflowId}`);
+            } else {
+              navigate("/workflows");
+            }
+          }}
           className="mb-6 hover:bg-muted"
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
 
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-foreground mb-6">
-            워크 관리 (상세 로그)
-          </h1>
-
-          <div className="space-y-3">
-            {mockLogData.map((item) => (
-              <LogAccordion
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                status={item.status}
-                log={item.log}
-                result={item.result}
-              />
-            ))}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-foreground">워크 관리 (상세 로그)</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              워크플로우별 발행된 워크를 확인하세요.
+            </p>
           </div>
+
+          {!numericWorkId ? (
+            <div className="p-6 rounded-xl border border-border bg-muted/20 text-sm text-muted-foreground">
+              잘못된 접근입니다. 워크 정보를 다시 확인해주세요.
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {isLoading && (
+                <div className="space-y-4">
+                  {[...Array(4)].map((_, idx) => (
+                    <div key={idx} className="relative pl-10 pb-6 last:pb-0 border-l border-border">
+                      <span className="absolute -left-[7px] top-1.5 w-3.5 h-3.5 rounded-full bg-muted" />
+                      <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                      <div className="h-3 w-40 bg-muted/60 animate-pulse rounded mt-2" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!isLoading && isError && (
+                <div className="p-6 rounded-xl border border-destructive/40 bg-destructive/10 text-sm text-destructive">
+                  {statusMessage}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-4"
+                    onClick={() => refetch()}
+                  >
+                    다시 불러오기
+                  </Button>
+                </div>
+              )}
+
+              {!isLoading && !isError && steps.length === 0 && (
+                <div className="p-6 rounded-xl border border-border bg-muted/20 text-sm text-muted-foreground">
+                  표시할 로그가 없습니다.
+                </div>
+              )}
+
+              {!isLoading && !isError && steps.length > 0 && (
+                <div className="space-y-8">
+                    {steps.map((step, index) => {
+                      const statusMeta = getStatusMeta(step.status);
+                      const indicatorClass = getStatusIndicatorClasses(step.status);
+                      const normalizedStepKey = normalizeKey(step.stepName);
+                      const showMessages =
+                        MESSAGE_STEP_KEYS.has(normalizedStepKey) && step.messages.length > 0;
+                      const isCollapsed = collapsedSteps[index] ?? false;
+
+                      return (
+                        <div key={`${step.stepName}-${step.timestamp}-${index}`} className="relative pl-12">
+                          {index !== steps.length - 1 && (
+                            <span className="absolute left-[11px] top-5 bottom-[-32px] w-px bg-border" />
+                          )}
+                          <span
+                            className={`absolute left-0 top-2 w-5 h-5 rounded-full border ${indicatorClass}`}
+                          />
+
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold text-foreground">
+                                {getFriendlyStepName(step.stepName)}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {formatTimestamp(step.timestamp)}
+                              </div>
+                            </div>
+
+                            <Badge variant="outline" className={`${statusMeta.className} sr-only`}>
+                              {statusMeta.label}
+                            </Badge>
+                          </div>
+
+                          {showMessages && (
+                            <div className="mt-4 rounded-xl border border-border bg-background px-5 py-4">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                                <span></span>
+                                <button
+                                  type="button"
+                                  className="w-7 h-7 rounded flex items-center justify-center text-base leading-none text-muted-foreground hover:bg-muted focus:outline-none"
+                                  onClick={() =>
+                                    setCollapsedSteps((prev) => ({
+                                      ...prev,
+                                      [index]: !isCollapsed,
+                                    }))
+                                  }
+                                >
+                                  {isCollapsed ? "⌄" : "⌃"}
+                                </button>
+                              </div>
+
+                              {!isCollapsed && (
+                                <ol className="space-y-3 text-sm text-muted-foreground">
+                                  {step.messages.map((message, idx) => (
+                                    <li key={`${idx}-${message.slice(0, 10)}`} className="flex gap-2">
+                                      <span className="text-xs text-muted-foreground font-mono">
+                                        {idx + 1}.
+                                      </span>
+                                      <span className="whitespace-pre-wrap break-words break-all font-mono text-[13px]">
+                                        {message}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -44,9 +44,17 @@ export function AdminMainContent({ section, onSectionChange, userFilter, workflo
     );
   }
 
+
   if (section === "work") {
-    return <AdminWorkSection key={workflowFilter?.workflowId || 'all'} active workflowId={workflowFilter?.workflowId} />;
+    return (
+      <AdminWorkSection
+        key={workflowFilter?.workflowId || 'all'}
+        active
+        workflowId={workflowFilter?.workflowId}
+      />
+    );
   }
+
 
   if (section === "stats") {
     return <AdminUserStatsSection active />;

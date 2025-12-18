@@ -4,7 +4,7 @@ import { ApiResponse } from './workflowService';
 export interface Work {
   workId: number;
   status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
-          'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
+  'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
   postingUrl: string | null;
   completedAt: string | null;
   choiceProduct: string | null;
@@ -13,8 +13,10 @@ export interface Work {
 // 관리자용 Work 타입 (추가 필드 포함)
 export interface AdminWork {
   workId: number;
+  userId: number;
+  workflowId: number;
   status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
-          'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
+  'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
   postingUrl: string | null;
   title: string | null;
   content: string | null;
@@ -40,6 +42,13 @@ export interface AdminWorkPageResponse {
   totalElements: number;
   totalPages: number;
   last: boolean;
+}
+
+export interface WorkLogEntry {
+  stepName: string;
+  messages: string[];
+  status: string;
+  timestamp?: string;
 }
 
 export const workService = {
@@ -68,6 +77,11 @@ export const workService = {
   // Work 삭제 (관리자용)
   async deleteWork(workId: number): Promise<ApiResponse<void>> {
     const response = await api.delete(`/api/v1/work/${workId}`);
+    return response.data;
+  },
+
+  async getWorkLogs(workId: number): Promise<ApiResponse<WorkLogEntry[]>> {
+    const response = await api.get(`/api/v1/work/${workId}/logs`);
     return response.data;
   },
 };

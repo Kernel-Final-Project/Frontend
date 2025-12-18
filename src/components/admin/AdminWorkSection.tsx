@@ -7,12 +7,12 @@ import { AlertCircle, Loader2, FileText, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { workService, AdminWork } from "@/services/workService";
 import { AdminWorkTable } from "./AdminWorkTable";
-import { AdminWorkDetailModal } from "./AdminWorkDetailModal";
+import { AdminUnifiedDetailModal } from "./AdminUnifiedDetailModal";
 import { Pagination } from "@/components/Pagination";
 
 type AdminWorkSectionProps = {
   active: boolean;
-  workflowId?: number; // 선택적 필터링
+  workflowId?: number;
 };
 
 export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) {
@@ -24,8 +24,8 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [selectedWork, setSelectedWork] = useState<AdminWork | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [initialPage, setInitialPage] = useState<{ type: "work" | "workflow" | "user"; id: number; data?: any } | null>(null);
 
   const fetchWorks = async (page: number) => {
     try {
@@ -148,10 +148,20 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
           <>
             <AdminWorkTable
               works={filtered}
-              onSelect={(id) => {
-                const work = filtered.find(w => w.workId === id);
-                setSelectedWork(work || null);
-                setDetailOpen(true);
+              onSelect={(workId) => {
+                const selected = works.find(w => w.workId === workId);
+                if (selected) {
+                  setInitialPage({ type: "work", id: workId, data: selected });
+                  setModalOpen(true);
+                }
+              }}
+              onOpenWorkflowDetail={(workflowId) => {
+                setInitialPage({ type: "workflow", id: workflowId });
+                setModalOpen(true);
+              }}
+              onOpenUserDetail={(userId) => {
+                setInitialPage({ type: "user", id: userId });
+                setModalOpen(true);
               }}
             />
 
@@ -169,11 +179,13 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
         )}
       </CardContent>
 
-      <AdminWorkDetailModal
-        work={selectedWork}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
+      {initialPage && (
+        <AdminUnifiedDetailModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          initialPage={initialPage}
+        />
+      )}
     </Card>
   );
 }
