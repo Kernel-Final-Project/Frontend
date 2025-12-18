@@ -93,13 +93,20 @@ export function AdminUnifiedDetailModal({ open, onOpenChange, initialPage, onDel
     loadPageData();
   }, [currentPage, open]);
 
-  // 모달이 닫힐 때 히스토리 초기화
+  // initialPage가 변경되면 항상 히스토리 초기화
+  useEffect(() => {
+    setHistory([initialPage]);
+    if (!open) {
+      setEditMode(false);
+    }
+  }, [initialPage]);
+
+  // 모달이 닫힐 때만 editMode 초기화
   useEffect(() => {
     if (!open) {
-      setHistory([initialPage]);
-      setEditMode(false)
+      setEditMode(false);
     }
-  }, [open, initialPage]);
+  }, [open]);
 
   const handleEditSuccess = async () => {
     setEditMode(false);

@@ -58,8 +58,8 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, 
               <TableHead className="font-semibold text-foreground text-center">사이트 URL</TableHead>
               <TableHead className="font-semibold text-foreground text-center">블로그</TableHead>
               <TableHead className="font-semibold text-foreground text-center">트렌드 카테고리</TableHead>
-              <TableHead className="font-semibold text-foreground text-center">상태</TableHead>
               <TableHead className="font-semibold text-foreground text-center">테스트 상태</TableHead>
+              <TableHead className="font-semibold text-foreground text-center">상태</TableHead>
               <TableHead className="font-semibold text-foreground text-center">작업</TableHead>
             </TableRow>
 
@@ -96,16 +96,16 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, 
                 <TableCell className="text-center">{workflow.blogType}</TableCell>
                 <TableCell className="text-center">{workflow.trendCategoryName}</TableCell>
                 <TableCell className="text-center">
+                  <Badge variant={statusVariant[workflow.testStatus]}>
+                    {statusLabels[workflow.testStatus]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
                   <Badge
                     variant={statusVariant[workflow.status] ?? "default"}
                     className="tracking-tight"
                   >
                     {statusLabels[workflow.status] || workflow.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  <Badge variant={statusVariant[workflow.testStatus]}>
-                    {statusLabels[workflow.testStatus]}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center">

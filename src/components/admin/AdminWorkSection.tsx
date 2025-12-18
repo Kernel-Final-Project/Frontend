@@ -51,16 +51,18 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
 
   useEffect(() => {
     if (!active) return;
-    setCurrentPage(0); // workflowId 변경 시 첫 페이지로 리셋
-    fetchWorks(0);
-  }, [active, workflowId]);
-
-  useEffect(() => {
-    if (!active) return;
     if (currentPage > 0) {
       fetchWorks(currentPage);
     }
   }, [currentPage]);
+
+  useEffect(() => {
+    if (!active) return;
+    setInitialPage(null);  // 이전 워크플로우 정보 제거
+    setModalOpen(false);   // 모달 닫기
+    setCurrentPage(0);
+    fetchWorks(0);
+  }, [active, workflowId]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
