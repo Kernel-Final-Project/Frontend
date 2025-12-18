@@ -44,6 +44,13 @@ export interface AdminWorkPageResponse {
   last: boolean;
 }
 
+export interface WorkLogEntry {
+  stepName: string;
+  messages: string[];
+  status: string;
+  timestamp?: string;
+}
+
 export const workService = {
   // 워크플로우별 Work 목록 조회 (페이지네이션)
   async getWorksByWorkflowId(
@@ -70,6 +77,11 @@ export const workService = {
   // Work 삭제 (관리자용)
   async deleteWork(workId: number): Promise<ApiResponse<void>> {
     const response = await api.delete(`/api/v1/work/${workId}`);
+    return response.data;
+  },
+
+  async getWorkLogs(workId: number): Promise<ApiResponse<WorkLogEntry[]>> {
+    const response = await api.get(`/api/v1/work/${workId}/logs`);
     return response.data;
   },
 };
