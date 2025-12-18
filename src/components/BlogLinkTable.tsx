@@ -8,13 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate, useParams } from "react-router-dom";
 import { BlogLink } from "@/utils/workUtils";
 
 interface BlogLinkTableProps {
   blogLinks: BlogLink[];
   onLogDetail: (id: number) => void;
-  onStatsDetail: (id: number) => void;
 }
 
 const statusStyles = {
@@ -23,14 +21,7 @@ const statusStyles = {
   "실패": "bg-[hsl(var(--status-error))] hover:bg-[hsl(var(--status-error))] text-white",
 };
 
-export function BlogLinkTable({ blogLinks, onLogDetail, onStatsDetail }: BlogLinkTableProps) {
-  const navigate = useNavigate();
-  const { id: workId } = useParams();
-
-  const handleLogDetail = (logId: number) => {
-    navigate(`/work/${workId}/log/${logId}`);
-  };
-
+export function BlogLinkTable({ blogLinks, onLogDetail }: BlogLinkTableProps) {
   return (
     <div className="rounded-xl border border-border bg-card card-shadow overflow-hidden">
       <Table>
@@ -78,7 +69,7 @@ export function BlogLinkTable({ blogLinks, onLogDetail, onStatsDetail }: BlogLin
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleLogDetail(link.id);
+                      onLogDetail(link.id);
                     }}
                     className="text-xs h-8 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                   >

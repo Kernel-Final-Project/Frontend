@@ -52,7 +52,7 @@ export function WorkflowTable({ workflows, onSchedule, onEdit, onDelete }: Workf
   const navigate = useNavigate();
 
   const handleRowClick = (workflow: Workflow) => {
-    navigate(`/work/${workflow.workflowId}`, { state: { workflow } });
+    navigate(`/workflow/${workflow.workflowId}`, { state: { workflow } });
   };
 
   return (

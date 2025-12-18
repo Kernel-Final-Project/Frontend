@@ -34,11 +34,6 @@ const App = () => (
             } />
             <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
-            <Route path="/work/:workId/log/:logId" element={
-              <ProtectedRoute>
-                <LogDetail />
-              </ProtectedRoute>
-            } />
             <Route path="/workflows" element={
               <ProtectedRoute>
                 <Workflows />
@@ -59,14 +54,14 @@ const App = () => (
                 <MyPage />
               </ProtectedRoute>
             } />
-            <Route path="/work/:id" element={
-              <ProtectedRoute>
-                <WorkManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/work/:workId/log/:logId" element={
+            <Route path="/workflow/:workId/logs" element={
               <ProtectedRoute>
                 <LogDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/workflow/:workflowId" element={
+              <ProtectedRoute>
+                <WorkManagement />
               </ProtectedRoute>
             } />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
