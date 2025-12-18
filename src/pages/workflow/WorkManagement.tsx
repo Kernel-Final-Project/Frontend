@@ -29,11 +29,6 @@ const WorkManagement = () => {
 
   // 초기 데이터 로드
   useEffect(() => {
-    if (Number.isNaN(workflowId)) {
-      setIsLoading(false);
-      return;
-    }
-
     if (passedWorkflow) {
       // WorkflowTable에서 전달받은 데이터가 있으면 바로 사용 (API 호출 생략)
       // Workflow 타입을 WorkflowDetailResponse 형태로 변환
@@ -55,6 +50,7 @@ const WorkManagement = () => {
           mainCategoryName: passedWorkflow.trendCategoryName,
         },
         status: passedWorkflow.status,
+        testStatus: passedWorkflow.testStatus,
       };
       setWorkflow(convertedWorkflow);
       fetchWorks(0);

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2, Workflow, Plus, Search } from "lucide-react";
 import { workflowService, Workflow as WorkflowType } from "@/services/workflowService";
 import { AdminWorkflowTable } from "./AdminWorkflowTable";
-import { AdminWorkflowDetailModal } from "./AdminWorkflowDetailModal";
+import { AdminUnifiedDetailModal } from "./AdminUnifiedDetailModal";
 import { UserFilterInfo } from "./types";
 
 type AdminWorkflowSectionProps = {
@@ -28,6 +28,7 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
   const [totalElements, setTotalElements] = useState(0);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const fetchWorkflows = async (page: number, userId?: number) => {
     try {
@@ -95,6 +96,16 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
 
   return (
     <>
+      {/* {isRegistering ? (
+        // 등록 폼 표시
+        <AddWorkflow
+          onCancel={() => setIsRegistering(false)}
+          onSuccess={() => {
+            setIsRegistering(false);
+            handleUpdate();  // 목록 새로고침
+          }}
+        />
+      ) : ( */}
       <Card className="card-shadow overflow-hidden">
         <CardHeader className="bg-muted/40 flex flex-col gap-2">
           <div className="flex items-center justify-between">
@@ -104,7 +115,7 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
             </div>
             <Button
               className="gap-2"
-              onClick={() => navigate("/workflows/add")}
+              onClick={() => setIsRegistering(true)}
             >
               <Plus className="w-4 h-4" />
               등록
@@ -167,16 +178,24 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
                 setDetailOpen(true);
               }}
             />
+
           )}
         </CardContent>
       </Card>
+      {/* )} */}
 
-      <AdminWorkflowDetailModal
-        workflowId={selectedWorkflowId}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        onDelete={handleDelete}
-      />
+      {selectedWorkflowId && (
+        <AdminUnifiedDetailModal
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          initialPage={{ type: "workflow", id: selectedWorkflowId }}
+          onDeleteWorkflow={(id) => {
+            handleDelete(id);
+            setDetailOpen(false);
+          }}
+          onUpdateWorkflow={handleUpdate}  // 이 줄 추가
+        />
+      )}
     </>
   );
 }

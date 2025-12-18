@@ -4,7 +4,7 @@ import { ApiResponse } from './workflowService';
 export interface Work {
   workId: number;
   status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
-          'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
+  'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
   postingUrl: string | null;
   completedAt: string | null;
   choiceProduct: string | null;
@@ -13,8 +13,10 @@ export interface Work {
 // 관리자용 Work 타입 (추가 필드 포함)
 export interface AdminWork {
   workId: number;
+  userId: number;
+  workflowId: number;
   status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
-          'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
+  'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
   postingUrl: string | null;
   title: string | null;
   content: string | null;
