@@ -104,8 +104,8 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, 
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge variant={statusVariant[workflow.status]}>
-                    {statusLabels[workflow.status]}
+                  <Badge variant={statusVariant[workflow.testStatus]}>
+                    {statusLabels[workflow.testStatus]}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center">
