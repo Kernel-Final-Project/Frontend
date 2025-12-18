@@ -12,10 +12,10 @@ import { workService, Work } from "@/services/workService";
 import { convertWorkToBlogLink } from "@/utils/workUtils";
 
 const WorkManagement = () => {
-  const { id } = useParams();
+  const { workflowId: workflowIdParam } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const workflowId = Number(id);
+  const workflowId = workflowIdParam ? Number(workflowIdParam) : NaN;
 
   // location.state에서 workflow 가져오기 (WorkflowTable에서 전달)
   const passedWorkflow = location.state?.workflow as Workflow | undefined;
@@ -29,6 +29,11 @@ const WorkManagement = () => {
 
   // 초기 데이터 로드
   useEffect(() => {
+    if (Number.isNaN(workflowId)) {
+      setIsLoading(false);
+      return;
+    }
+
     if (passedWorkflow) {
       // WorkflowTable에서 전달받은 데이터가 있으면 바로 사용 (API 호출 생략)
       // Workflow 타입을 WorkflowDetailResponse 형태로 변환
@@ -57,7 +62,7 @@ const WorkManagement = () => {
       // 직접 URL 접근 시에는 API 호출
       fetchWorkflowInfo();
     }
-  }, [workflowId]);
+  }, [passedWorkflow, workflowId]);
 
   // 페이지 변경 시 Work 목록만 재로드
   useEffect(() => {
@@ -68,6 +73,10 @@ const WorkManagement = () => {
 
   // 워크플로우 정보 가져오기 (직접 URL 접근 시에만 사용)
   const fetchWorkflowInfo = async () => {
+    if (Number.isNaN(workflowId)) {
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await workflowService.getWorkflowById(workflowId);
@@ -86,6 +95,10 @@ const WorkManagement = () => {
 
   // Work 목록 가져오기
   const fetchWorks = async (page: number) => {
+    if (Number.isNaN(workflowId)) {
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await workService.getWorksByWorkflowId(workflowId, page);
@@ -108,17 +121,20 @@ const WorkManagement = () => {
     setCurrentPage(page - 1); // UI는 1부터, 백엔드는 0부터
   };
 
-  const handleLogDetail = (linkId: number) => {
-    toast({
-      title: "로그 관리",
-      description: `블로그 링크 ${linkId}번의 로그를 확인합니다.`,
-    });
-  };
+  const handleLogDetail = (targetWorkId: number) => {
+    if (Number.isNaN(targetWorkId)) {
+      toast({
+        title: "로그 이동 실패",
+        description: "선택한 워크 정보를 확인할 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleStatsDetail = (linkId: number) => {
-    toast({
-      title: "통계 관리",
-      description: `블로그 링크 ${linkId}번의 통계를 확인합니다.`,
+    navigate(`/workflow/${targetWorkId}/logs`, {
+      state: {
+        workflowId: Number.isNaN(workflowId) ? undefined : workflowId,
+      },
     });
   };
 
@@ -179,7 +195,6 @@ const WorkManagement = () => {
               <BlogLinkTable
                 blogLinks={blogLinks}
                 onLogDetail={handleLogDetail}
-                onStatsDetail={handleStatsDetail}
               />
             </div>
 
