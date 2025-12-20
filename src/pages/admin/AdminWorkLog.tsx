@@ -98,7 +98,7 @@ export default function AdminWorkLog() {
 
             {!isLoading && !isError && logs.length > 0 && (
               <div className="space-y-4">
-                {logs
+                {[...logs]
                   .sort((a, b) => a.stepNumber - b.stepNumber || b.createdAt.localeCompare(a.createdAt))
                   .map((log) => (
                     <div key={log.logId} className="rounded-2xl border border-border bg-card shadow-sm p-6">
