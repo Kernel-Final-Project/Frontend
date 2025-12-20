@@ -12,7 +12,7 @@ export function HeroSection() {
       />
 
       {/* Overlay */}
-      <div className="absolute inset-0 hero-gradient" />
+      <div className="absolute " />
 
       {/* Content */}
       <div className="container relative z-10 pt-16">
