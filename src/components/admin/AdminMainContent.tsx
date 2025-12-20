@@ -6,6 +6,7 @@ import { AdminWorkflowSection } from "./AdminWorkflowSection";
 import { AdminWorkSection } from "./AdminWorkSection";
 import { Settings2 } from "lucide-react";
 import { AdminUserStatsSection } from "./AdminUserStatsSection";
+import { AdminCommonCodeSection } from "./AdminCommonCodeSection";
 
 type AdminMainContentProps = {
   section: AdminSection;
@@ -59,11 +60,15 @@ export function AdminMainContent({ section, onSectionChange, userFilter, workflo
     return <AdminUserStatsSection active />;
   }
 
+  if (section === "code") {
+    return <AdminCommonCodeSection active />;
+  }
+
   return (
-    <AdminPlaceholderPanel
-      title="공통 코드 관리"
-      icon={<Settings2 className="h-4 w-4" />}
-      description="카테고리 및 코드 관리 영역입니다."
-    />
+      <AdminPlaceholderPanel
+          title="알 수 없는 섹션"
+          icon={<Settings2 className="h-4 w-4" />}
+          description="알 수 없는 섹션입니다."
+      />
   );
 }
