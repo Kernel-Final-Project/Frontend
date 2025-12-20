@@ -51,6 +51,16 @@ export interface WorkLogEntry {
   timestamp?: string;
 }
 
+export interface AdminWorkLogEntry {
+  logId: number;
+  stepNumber: number;
+  stepName: string;
+  logData: string;
+  status: string;
+  logLevel: string;
+  createdAt: string;
+}
+
 export const workService = {
   // 워크플로우별 Work 목록 조회 (페이지네이션)
   async getWorksByWorkflowId(
@@ -82,6 +92,11 @@ export const workService = {
 
   async getWorkLogs(workId: number): Promise<ApiResponse<WorkLogEntry[]>> {
     const response = await api.get(`/api/v1/work/${workId}/logs`);
+    return response.data;
+  },
+
+  async getAdminWorkLogs(workId: number): Promise<ApiResponse<AdminWorkLogEntry[]>> {
+    const response = await api.get(`/api/v1/admin/work/${workId}/logs`);
     return response.data;
   },
 };

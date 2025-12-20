@@ -17,6 +17,7 @@ import NoticeDetailPage from "./pages/notices/NoticeDetailPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import NoticeCreatePage from "./pages/admin/NoticeCreatePage";
 import NoticeEditPage from "./pages/admin/NoticeEditPage";
+import AdminWorkLog from "./pages/admin/AdminWorkLog";
 import MyPage from "./pages/MyPage";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/notices/new" element={<ProtectedRoute><NoticeCreatePage /></ProtectedRoute>} />
             <Route path="/admin/notices/:noticeId/edit" element={<ProtectedRoute><NoticeEditPage /></ProtectedRoute>} />
+            <Route path="/admin/work/:workId/log" element={<ProtectedRoute><AdminWorkLog /></ProtectedRoute>} />
             <Route path="/notices" element={<NoticeListPage />} />
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
             <Route path="*" element={<NotFound />} />
