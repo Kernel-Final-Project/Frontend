@@ -6,6 +6,8 @@ import { FeaturesSection } from "@/components/main/FeaturesSection";
 import { NoticeSection } from "@/components/NoticeSection.tsx";
 import { Footer } from "@/components/common/Footer";
 import { LoginDialog } from "@/components/auth/LoginDialog";
+import { WhySection } from "@/components/main/WhySection";
+import { FloatingLogosCTA } from "@/components/main/FloatingLogosCTA";
 
 const Index = () => {
   const [loginOpen, setLoginOpen] = useState(false);
@@ -33,7 +35,9 @@ const Index = () => {
       <Header onLoginClick={() => setLoginOpen(true)} />
       <main>
         <HeroSection />
+        <WhySection />
         <FeaturesSection />
+        <FloatingLogosCTA />
         <NoticeSection />
       </main>
       <Footer />

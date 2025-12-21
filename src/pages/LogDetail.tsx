@@ -33,6 +33,12 @@ const MESSAGE_STEP_KEYS = new Set([
   "product_select",
   "find_product",
   "generate_content",
+  "키워드_선택",
+  "키워드선택",
+  "keyword_select",
+  "키워드전송",
+  "키워드_전송",
+  "keyword_send",
 ]);
 
 const normalizeKey = (value?: string) =>
@@ -267,11 +273,11 @@ export default function LogDetail() {
 
                           {showMessages && (
                             <div className="mt-4 rounded-xl border border-border bg-background px-5 py-4">
-                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                                <span></span>
+                              <div className="relative mb-3 text-xs text-muted-foreground pr-8">
+                                메시지 {step.messages.length}건
                                 <button
                                   type="button"
-                                  className="w-7 h-7 rounded flex items-center justify-center text-base leading-none text-muted-foreground hover:bg-muted focus:outline-none"
+                                  className="absolute top-0 right-0 w-7 h-7 rounded flex items-center justify-center text-base leading-none text-muted-foreground hover:bg-muted focus:outline-none"
                                   onClick={() =>
                                     setCollapsedSteps((prev) => ({
                                       ...prev,
