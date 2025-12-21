@@ -3,9 +3,23 @@ import { ApiResponse } from './workflowService';
 
 export interface Work {
   workId: number;
+  title: string | null;
   status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
   'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
   postingUrl: string | null;
+  completedAt: string | null;
+  choiceProduct: string | null;
+}
+
+// 워크 상세 조회 응답 타입 (사용자용)
+export interface WorkDetailResponse {
+  workId: number;
+  status: 'PENDING' | 'REQUESTED' | 'TREND_KEYWORD_DONE' | 'PRODUCT_SELECTED' |
+  'CONTENT_GENERATED' | 'BLOG_UPLOAD_PENDING' | 'COMPLETED' | 'FAILED';
+  postingUrl: string | null;
+  title: string | null;
+  content: string | null;
+  choiceTrendKeyword: string | null;
   completedAt: string | null;
   choiceProduct: string | null;
 }
@@ -92,6 +106,12 @@ export const workService = {
 
   async getWorkLogs(workId: number): Promise<ApiResponse<WorkLogEntry[]>> {
     const response = await api.get(`/api/v1/work/${workId}/logs`);
+    return response.data;
+  },
+
+  // 단일 Work 조회 (사용자용)
+  async getWorkById(workId: number): Promise<ApiResponse<WorkDetailResponse>> {
+    const response = await api.get(`/api/v1/work/find/${workId}`);
     return response.data;
   },
 

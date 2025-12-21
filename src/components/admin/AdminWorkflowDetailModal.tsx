@@ -30,17 +30,25 @@ const statusVariant: Record<
 > = {
   ACTIVE: "success",
   PENDING: "warning",
+  PRE_REGISTERED: "outline",
   INACTIVE: "secondary",
   DELETED: "destructive",
   COMPLETED: "success",
+  NOT_TESTED: "outline",
+  TEST_PASSED: "success",
+  TEST_FAILED: "destructive",
 };
 
 const statusLabels: Record<string, string> = {
   ACTIVE: "활성",
   PENDING: "대기",
+  PRE_REGISTERED: "등록 대기",
   INACTIVE: "비활성",
   DELETED: "삭제됨",
   COMPLETED: "완료",
+  NOT_TESTED: "테스트 전",
+  TEST_PASSED: "테스트 통과",
+  TEST_FAILED: "테스트 실패",
 };
 
 
@@ -162,18 +170,19 @@ export function AdminWorkflowDetailModal({ workflowId, open, onOpenChange, onDel
         <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <Button
+
+
+
+              <DialogTitle><Button
                 variant="ghost"
                 size="icon"
                 onClick={handleEditCancel}
                 className="h-8 w-8"
               >
                 <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <DialogTitle>워크플로우 수정</DialogTitle>
-                <DialogDescription>워크플로우 정보를 수정합니다.</DialogDescription>
-              </div>
+              </Button>워크플로우 수정</DialogTitle>
+              <DialogDescription>워크플로우 정보를 수정합니다.</DialogDescription>
+
             </div>
           </DialogHeader>
           <div className="mt-4">

@@ -14,23 +14,25 @@ import { Button } from "../ui/button";
 
 type AdminWorkTableProps = {
   works: AdminWork[];
+  currentPage?: number;  // 추가
   onSelect?: (workId: number) => void;
   onOpenWorkflowDetail?: (workflowId: number) => void;
   onOpenUserDetail?: (userId: number) => void;
 };
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "dark"> = {
-  "COMPLETED": "success",
-  "PENDING": "warning",
-  "REQUESTED": "warning",
-  "TREND_KEYWORD_DONE": "warning",
-  "PRODUCT_SELECTED": "warning",
-  "CONTENT_GENERATED": "warning",
-  "BLOG_UPLOAD_PENDING": "warning",
-  "FAILED": "destructive",
+// 상태별 스타일 매핑 (사용자 워크 목록과 동일)
+const statusStyles: Record<string, string> = {
+  "대기": "bg-gray-500 hover:bg-gray-500 text-white",
+  "요청됨": "bg-blue-500 hover:bg-blue-500 text-white",
+  "키워드 추출 성공": "bg-cyan-500 hover:bg-cyan-500 text-white",
+  "상품 선택 완료": "bg-indigo-500 hover:bg-indigo-500 text-white",
+  "콘텐츠 생성 완료": "bg-purple-500 hover:bg-purple-500 text-white",
+  "블로그 업로드 준비": "bg-amber-500 hover:bg-amber-500 text-white",
+  "완료": "bg-[hsl(var(--status-success))] hover:bg-[hsl(var(--status-success))] text-white",
+  "실패": "bg-[hsl(var(--status-error))] hover:bg-[hsl(var(--status-error))] text-white",
 };
 
-export function AdminWorkTable({ works, onSelect, onOpenWorkflowDetail, onOpenUserDetail }: AdminWorkTableProps) {
+export function AdminWorkTable({ works, currentPage = 0, onSelect, onOpenWorkflowDetail, onOpenUserDetail }: AdminWorkTableProps) {
   return (
     <>
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -54,7 +56,7 @@ export function AdminWorkTable({ works, onSelect, onOpenWorkflowDetail, onOpenUs
                 className="hover:bg-muted/50 cursor-pointer"
                 onClick={() => onSelect?.(work.workId)}
               >
-                <TableCell className="font-medium text-center">{index + 1}</TableCell>
+                <TableCell className="font-medium text-center">{currentPage * 10 + index + 1}</TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1.5">
                     <User className="h-3.5 w-3.5 text-muted-foreground" />
@@ -83,10 +85,7 @@ export function AdminWorkTable({ works, onSelect, onOpenWorkflowDetail, onOpenUs
                   {formatDateTime(work.completedAt)}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge
-                    variant={statusVariant[work.status] ?? "default"}
-                    className="tracking-tight"
-                  >
+                  <Badge className={statusStyles[mapWorkStatusToKorean(work.status)]}>
                     {mapWorkStatusToKorean(work.status)}
                   </Badge>
                 </TableCell>

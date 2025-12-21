@@ -25,6 +25,7 @@ const statusVariant: Record<
 > = {
   ACTIVE: "success",
   PENDING: "warning",
+  PRE_REGISTERED: "outline",
   INACTIVE: "secondary",
   DELETED: "destructive",
   COMPLETED: "success",
@@ -36,6 +37,7 @@ const statusVariant: Record<
 const statusLabels: Record<string, string> = {
   ACTIVE: "활성",
   PENDING: "대기",
+  PRE_REGISTERED: "등록 대기",
   INACTIVE: "비활성",
   DELETED: "삭제됨",
   COMPLETED: "완료",
@@ -55,7 +57,6 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, 
               <TableHead className="font-semibold text-foreground text-center">No</TableHead>
               <TableHead className="font-semibold text-foreground text-center">사용자ID</TableHead>
               <TableHead className="font-semibold text-foreground text-center">사이트명</TableHead>
-              <TableHead className="font-semibold text-foreground text-center">사이트 URL</TableHead>
               <TableHead className="font-semibold text-foreground text-center">블로그</TableHead>
               <TableHead className="font-semibold text-foreground text-center">트렌드 카테고리</TableHead>
               <TableHead className="font-semibold text-foreground text-center">테스트 상태</TableHead>
@@ -79,19 +80,8 @@ export function AdminWorkflowTable({ workflows, onUpdate, onRowClick, onSelect, 
                     <span className="font-medium hover:underline">{workflow.userId}</span>
                   </div>
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium text-center">
                   {workflow.siteName}
-                </TableCell>
-                <TableCell>
-                  <a
-                    href={workflow.siteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {workflow.siteUrl}
-                  </a>
                 </TableCell>
                 <TableCell className="text-center">{workflow.blogType}</TableCell>
                 <TableCell className="text-center">{workflow.trendCategoryName}</TableCell>

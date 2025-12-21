@@ -9,6 +9,8 @@ import { AlertCircle, Loader2, Workflow, Plus, Search } from "lucide-react";
 import { workflowService, Workflow as WorkflowType } from "@/services/workflowService";
 import { AdminWorkflowTable } from "./AdminWorkflowTable";
 import { AdminUnifiedDetailModal } from "./AdminUnifiedDetailModal";
+import { AdminWorkflowRegisterForm } from "./AdminWorkflowRegisterForm";
+import { AdminWorkflowEditForm } from "./AdminWorkflowEditForm";
 import { UserFilterInfo } from "./types";
 
 type AdminWorkflowSectionProps = {
@@ -29,6 +31,8 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingWorkflowId, setEditingWorkflowId] = useState<number | null>(null);
 
   const fetchWorkflows = async (page: number, userId?: number) => {
     try {
@@ -96,17 +100,31 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
 
   return (
     <>
-      {/* {isRegistering ? (
+      {isRegistering ? (
         // 등록 폼 표시
-        <AddWorkflow
+        <AdminWorkflowRegisterForm
           onCancel={() => setIsRegistering(false)}
           onSuccess={() => {
             setIsRegistering(false);
             handleUpdate();  // 목록 새로고침
           }}
         />
-      ) : ( */}
-      <Card className="card-shadow overflow-hidden">
+      ) : isEditing && editingWorkflowId ? (
+        // 수정 폼 표시
+        <AdminWorkflowEditForm
+          workflowId={editingWorkflowId}
+          onCancel={() => {
+            setIsEditing(false);
+            setEditingWorkflowId(null);
+          }}
+          onSuccess={() => {
+            setIsEditing(false);
+            setEditingWorkflowId(null);
+            handleUpdate();  // 목록 새로고침
+          }}
+        />
+      ) : (
+        <Card className="card-shadow overflow-hidden">
         <CardHeader className="bg-muted/40 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -182,7 +200,7 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
           )}
         </CardContent>
       </Card>
-      {/* )} */}
+      )}
 
       {selectedWorkflowId && (
         <AdminUnifiedDetailModal
@@ -193,7 +211,12 @@ export function AdminWorkflowSection({ active, userFilter, onNavigateToWork }: A
             handleDelete(id);
             setDetailOpen(false);
           }}
-          onUpdateWorkflow={handleUpdate}  // 이 줄 추가
+          onUpdateWorkflow={handleUpdate}
+          onEdit={(workflowId) => {
+            setDetailOpen(false);
+            setEditingWorkflowId(workflowId);
+            setIsEditing(true);
+          }}
         />
       )}
     </>

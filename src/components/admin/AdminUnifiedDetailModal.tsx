@@ -25,9 +25,10 @@ type AdminUnifiedDetailModalProps = {
   initialPage: Page;
   onDeleteWorkflow?: (id: number) => void;
   onUpdateWorkflow?: () => void;
+  onEdit?: (workflowId: number) => void;
 };
 
-export function AdminUnifiedDetailModal({ open, onOpenChange, initialPage, onDeleteWorkflow, onUpdateWorkflow }: AdminUnifiedDetailModalProps) {
+export function AdminUnifiedDetailModal({ open, onOpenChange, initialPage, onDeleteWorkflow, onUpdateWorkflow, onEdit }: AdminUnifiedDetailModalProps) {
 
   const [history, setHistory] = useState<Page[]>([initialPage]);
   const [loading, setLoading] = useState(false);
@@ -93,13 +94,11 @@ export function AdminUnifiedDetailModal({ open, onOpenChange, initialPage, onDel
     loadPageData();
   }, [currentPage, open]);
 
-  // initialPage가 변경되면 항상 히스토리 초기화
+  //initialPage가 변경되면 항상 히스토리 초기화 (id와 type 변경 감지)
   useEffect(() => {
     setHistory([initialPage]);
-    if (!open) {
-      setEditMode(false);
-    }
-  }, [initialPage]);
+    setEditMode(false); // 편집 모드도 초기화
+  }, [initialPage.type, initialPage.id]);
 
   // 모달이 닫힐 때만 editMode 초기화
   useEffect(() => {
@@ -221,7 +220,14 @@ export function AdminUnifiedDetailModal({ open, onOpenChange, initialPage, onDel
                     workflow={currentPage.data as WorkflowDetailResponse}
                     onNavigateToUser={(userId) => navigateTo("user", userId)}
                     onDelete={onDeleteWorkflow}
-                    onEdit={() => setEditMode(true)}
+                    onEdit={() => {
+                      if (onEdit) {
+                        onOpenChange(false);
+                        onEdit(currentPage.id);
+                      } else {
+                        setEditMode(true);
+                      }
+                    }}
                     onUpdate={() => {
                       reloadWorkflowData(); // 모달 내 데이터 업데이트
                       onUpdateWorkflow?.(); // 테이블 데이터 업데이트

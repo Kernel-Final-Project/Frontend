@@ -49,19 +49,18 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
     }
   };
 
+  // 페이지 변경 시 (0페이지 제외)
   useEffect(() => {
     if (!active) return;
-    if (currentPage > 0) {
-      fetchWorks(currentPage);
-    }
-  }, [currentPage]);
+    fetchWorks(currentPage);
+  }, [currentPage])
 
   useEffect(() => {
     if (!active) return;
-    setInitialPage(null);  // 이전 워크플로우 정보 제거
-    setModalOpen(false);   // 모달 닫기
+    setInitialPage(null);
+    setModalOpen(false);
     setCurrentPage(0);
-    fetchWorks(0);
+    // fetchWorks(0) 제거 - currentPage useEffect에서 처리
   }, [active, workflowId]);
 
   const filtered = useMemo(() => {
@@ -150,6 +149,7 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
           <>
             <AdminWorkTable
               works={filtered}
+              currentPage={currentPage}
               onSelect={(workId) => {
                 const selected = works.find(w => w.workId === workId);
                 if (selected) {

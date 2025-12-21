@@ -121,9 +121,10 @@ export function formatRecurrenceRule(rule: RecurrenceRuleDto): string {
  * @returns 실행 날짜 배열
  */
 export function getNextExecutionDates(rule: RecurrenceRuleDto, maxDates: number = 5): Date[] {
-  const { repeatType, daysOfWeek, daysOfMonth, startAt } = rule;
+  const { repeatType, daysOfWeek, daysOfMonth, startAt, endAt } = rule;
   const dates: Date[] = [];
   const start = new Date(startAt);
+  const end = endAt ? new Date(endAt) : null;
 
   if (repeatType === 'ONCE') {
     return [start];
@@ -140,7 +141,7 @@ export function getNextExecutionDates(rule: RecurrenceRuleDto, maxDates: number 
         if (dates.length >= maxDates) break;
 
         const date = new Date(year, month, day);
-        if (date >= start) {
+        if (date >= start && (!end || date <= end)) {
           dates.push(new Date(date));
         }
       }
@@ -153,7 +154,7 @@ export function getNextExecutionDates(rule: RecurrenceRuleDto, maxDates: number 
       const date = new Date(start);
       date.setDate(start.getDate() + dayOffset);
 
-      if (daysOfWeek.includes(date.getDay()) && date >= start) {
+      if (daysOfWeek.includes(date.getDay()) && date >= start && (!end || date <= end)) {
         dates.push(new Date(date));
       }
       dayOffset++;
@@ -163,7 +164,11 @@ export function getNextExecutionDates(rule: RecurrenceRuleDto, maxDates: number 
     for (let i = 0; i < maxDates; i++) {
       const date = new Date(start);
       date.setDate(start.getDate() + i);
-      dates.push(date);
+      if (!end || date <= end) {
+        dates.push(date);
+      } else {
+        break; // endAt을 넘어가면 더 이상 추가하지 않음
+      }
     }
   }
 

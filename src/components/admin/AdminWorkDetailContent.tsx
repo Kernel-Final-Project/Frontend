@@ -5,7 +5,6 @@ import { AdminWork } from "@/services/workService";
 import { mapWorkStatusToKorean, formatDateTime } from "@/utils/workUtils";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { EmptyWorkContentNotice } from "./EmptyWorkContentNotice";
 import { useState } from "react";
 
 type AdminWorkDetailContentProps = {
@@ -15,25 +14,25 @@ type AdminWorkDetailContentProps = {
 };
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "dark"> = {
-  "COMPLETED": "success",
-  "PENDING": "warning",
-  "REQUESTED": "warning",
-  "TREND_KEYWORD_DONE": "warning",
-  "PRODUCT_SELECTED": "warning",
-  "CONTENT_GENERATED": "warning",
-  "BLOG_UPLOAD_PENDING": "warning",
-  "FAILED": "destructive",
+  "PENDING": "secondary",              // 회색 - 대기
+  "REQUESTED": "outline",              // 테두리 - 요청됨
+  "TREND_KEYWORD_DONE": "default",     // 기본색 - 키워드 추출 성공
+  "PRODUCT_SELECTED": "default",       // 기본색 - 상품 선택 완료
+  "CONTENT_GENERATED": "warning",      // 노란색 - 콘텐츠 생성 완료
+  "BLOG_UPLOAD_PENDING": "warning",    // 노란색 - 블로그 업로드 준비
+  "COMPLETED": "success",              // 초록색 - 완료
+  "FAILED": "destructive",             // 빨간색 - 실패
 };
 
 export function AdminWorkDetailContent({ work, onNavigateToWorkflow, onNavigateToUser }: AdminWorkDetailContentProps) {
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+
   const hasGeneratedContent =
     !!work.choiceTrendKeyword ||
     !!work.completedAt ||
     !!work.title ||
     !!work.content ||
     !!work.postingUrl;
-
-  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -60,146 +59,134 @@ export function AdminWorkDetailContent({ work, onNavigateToWorkflow, onNavigateT
       <Separator />
 
       {/* 관련 정보 - 클릭 가능한 버튼들 */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-foreground">관련 정보</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onNavigateToUser(work.userId)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors group"
-          >
-            <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <div className="text-left">
-              <p className="text-xs text-blue-600/70 dark:text-blue-400/70">사용자</p>
-              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 group-hover:underline">#{work.userId}</p>
-            </div>
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button
+          onClick={() => onNavigateToUser(work.userId)}
+          className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+        >
+          <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-medium text-foreground">사용자 ID</p>
+            <p className="text-sm text-primary hover:underline">#{work.userId}</p>
+          </div>
+        </button>
 
-          <button
-            onClick={() => {
-              console.log("Workflow button clicked! workflowId:", work.workflowId);
-              onNavigateToWorkflow(work.workflowId);
-            }}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg transition-colors group"
-          >
-            <Workflow className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <div className="text-left">
-              <p className="text-xs text-purple-600/70 dark:text-purple-400/70">워크플로우</p>
-              <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 group-hover:underline">#{work.workflowId}</p>
-            </div>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            console.log("Workflow button clicked! workflowId:", work.workflowId);
+            onNavigateToWorkflow(work.workflowId);
+          }}
+          className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+        >
+          <Workflow className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-medium text-foreground">워크플로우 ID</p>
+            <p className="text-sm text-primary hover:underline">#{work.workflowId}</p>
+          </div>
+        </button>
       </div>
 
       <Separator />
-      {hasGeneratedContent ? (
-        <>
-          {/* 키워드 및 상품 정보 */}
-          {work.choiceTrendKeyword && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                선택 정보
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">선택 키워드</p>
-                  <p className="text-sm text-foreground font-medium">{work.choiceTrendKeyword}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">선택 상품</p>
-                  <p className="text-sm text-foreground font-medium">{work.choiceProduct}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* 완료 시간 */}
-          {work.completedAt && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                완료 시간
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <p className="text-sm text-foreground">{formatDateTime(work.completedAt)}</p>
-              </div>
-            </div>
-          )}
-
-          {/* 제목 */}
-          {work.title && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                제목
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <p className="text-sm text-foreground">{work.title}</p>
-              </div>
-            </div>
-          )}
-
-          {/* 내용 */}
-          {work.content && (
-            <div className="space-y-3">
-              {/* 헤더 영역 */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  내용
-                </h3>
-
-                <button
-                  onClick={() => setIsContentExpanded(prev => !prev)}
-                  className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
-                >
-                  {isContentExpanded ? "접기" : "크게 보기"}
-                  <span className="text-[10px]">
-                    {isContentExpanded ? "▲" : "▼"}
-                  </span>
-                </button>
-              </div>
-
-              {/* 내용 영역 */}
-              <div
-                className={`bg-muted/30 rounded-lg p-4 transition-all duration-300 ${isContentExpanded ? "max-h-none" : "max-h-60 overflow-y-auto"
-                  }`}
+      {/* 세부 정보 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* 포스팅 URL */}
+        {work.postingUrl && (
+          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+            <Link2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">포스팅 URL</p>
+              <a
+                href={work.postingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline break-all"
               >
-                <ReactQuill
-                  value={work.content}
-                  readOnly
-                  theme="bubble"
-                  modules={{ toolbar: false }}
-                />
-              </div>
+                {work.postingUrl}
+              </a>
             </div>
-          )}
+          </div>
+        )}
 
-
-          {/* 포스팅 URL */}
-          {work.postingUrl && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Link2 className="h-4 w-4" />
-                포스팅 URL
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <a
-                  href={work.postingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline break-all block"
-                >
-                  {work.postingUrl}
-                </a>
-              </div>
+        {/* 완료 일시 */}
+        {work.completedAt && (
+          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+            <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">완료 일시</p>
+              <p className="text-sm text-muted-foreground">{formatDateTime(work.completedAt)}</p>
             </div>
-          )}
-        </>
-      ) : (
-        <EmptyWorkContentNotice />
+          </div>
+        )}
+
+        {/* 선택 상품 */}
+        {work.choiceProduct && (
+          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+            <Tag className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">선택 상품</p>
+              <p className="text-sm text-muted-foreground">{work.choiceProduct}</p>
+            </div>
+          </div>
+        )}
+
+        {/* 트렌드 키워드 */}
+        {work.choiceTrendKeyword && (
+          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+            <Tag className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">트렌드 키워드</p>
+              <p className="text-sm text-muted-foreground">{work.choiceTrendKeyword}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 제목 */}
+      {work.title && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-sm font-semibold text-foreground">제목</h3>
+          </div>
+          <p className="text-sm text-foreground p-3 bg-muted/50 rounded-lg">{work.title}</p>
+        </div>
+      )}
+
+      {/* 콘텐츠 */}
+      {work.content && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-foreground">콘텐츠</h3>
+            </div>
+            <button
+              onClick={() => setIsContentExpanded(!isContentExpanded)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isContentExpanded ? '접기' : '전체보기'}
+            </button>
+          </div>
+          <div className={`bg-muted/50 rounded-lg ${isContentExpanded ? '' : 'max-h-[300px] overflow-hidden'}`}>
+            <ReactQuill
+              value={work.content}
+              readOnly
+              theme="snow"
+              modules={{ toolbar: false }}
+              className="border-0"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 생성된 콘텐츠가 없을 때 */}
+      {!hasGeneratedContent && (
+        <div className="rounded-lg border border-dashed border-border bg-background/70 py-10 text-center">
+          <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+          <p className="text-sm text-muted-foreground">아직 생성된 콘텐츠가 없습니다.</p>
+        </div>
       )}
     </div>
   );
-
 }

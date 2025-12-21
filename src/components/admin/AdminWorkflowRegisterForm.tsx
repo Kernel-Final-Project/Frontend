@@ -2,14 +2,17 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, Workflow } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, BlogType, Category } from '@/services/workflowService';
 import { RecurrenceRuleForm } from '@/components/workflow/RecurrenceRuleForm';
 import { validateRecurrenceRule } from '@/utils/recurrenceRuleHelper';
 import naverBlogLogo from '/naverBlog_logo.png';
 import tistoryLogo from '/tistory_logo.png';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
 type AdminWorkflowRegisterFormProps = {
   onCancel: () => void;
@@ -17,7 +20,17 @@ type AdminWorkflowRegisterFormProps = {
 };
 
 export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflowRegisterFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [testErrorMessage, setTestErrorMessage] = useState<string | null>(null);
+  const [originalTestFields, setOriginalTestFields] = useState<{
+    blogId: string;
+    blogPassword: string;
+    blogUrl: string;
+  } | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testWorkflowId, setTestWorkflowId] = useState<number | null>(null);
+  const [testStatus, setTestStatus] = useState<'NOT_TESTED' | 'TESTING' | 'TEST_PASSED' | 'TEST_FAILED'>('NOT_TESTED');
+
   const [sites, setSites] = useState<SiteInfo[]>([]);
   const [blogTypes, setBlogTypes] = useState<BlogType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -58,6 +71,24 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
     })();
   }, []);
 
+  // 계정 정보 변경 시 테스트 초기화
+  useEffect(() => {
+    if (!originalTestFields || testStatus !== 'TEST_PASSED') return;
+
+    const fieldsChanged =
+      blogId !== originalTestFields.blogId ||
+      blogPassword !== originalTestFields.blogPassword ||
+      blogUrl !== originalTestFields.blogUrl;
+
+    if (fieldsChanged) {
+      setTestStatus('NOT_TESTED');
+      setTestWorkflowId(null);
+      setTestErrorMessage(null);
+      setOriginalTestFields(null);
+    }
+  }, [blogId, blogPassword, blogUrl, originalTestFields, testStatus]);
+
+
   // 카테고리 변경 핸들러
   const handleFirstCategoryChange = (categoryId: string) => {
     const selected = categories.find(c => c.categoryId === Number(categoryId)) || null;
@@ -80,17 +111,129 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
     setSelectedCategoryId(selected?.categoryId || null);
   };
 
-  const handleTest = () => {
+  // 테스트 상태 폴링
+  useEffect(() => {
+    if (testStatus !== 'TESTING' || !testWorkflowId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
+        if (response.success) {
+          const status = response.data.testStatus;
+          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
+            setTestStatus(status);
+            setIsTesting(false);
+            clearInterval(interval);
+
+            if (status === 'TEST_PASSED') {
+              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
+              setTestErrorMessage(null);
+            } else {
+              // 실패 사유 표시
+              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
+              setTestErrorMessage(failureReason);
+              toast({
+                title: "테스트 실패",
+                description: failureReason,
+                variant: "destructive"
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('테스트 상태 조회 실패:', error);
+      }
+    }, 2000); // 2초마다 폴링
+
+    return () => clearInterval(interval);
+  }, [testStatus, testWorkflowId]);
+
+
+
+  const handleTest = async () => {
+    // 계정 정보 유효성 검사
     if (!blogId || !blogPassword || !blogUrl) {
       toast({ title: "알림", description: "블로그 계정 정보를 모두 입력해주세요.", variant: "destructive" });
       return;
     }
-    toast({ title: "테스트 진행", description: "블로그 계정 연결 테스트를 진행합니다." });
+
+    // 전체 필수 필드 검사
+    if (!siteUrl || !selectedCategoryId || !selectedBlogTypeId) {
+      toast({ title: "입력 오류", description: "모든 필수 필드를 입력해주세요.", variant: "destructive" });
+      return;
+    }
+
+    const ruleError = validateRecurrenceRule(recurrenceRule);
+    if (ruleError) {
+      toast({ title: "반복 규칙 오류", description: ruleError, variant: "destructive" });
+      return;
+    }
+
+    const selectedBlogType = blogTypes.find(bt => bt.blogTypeId === selectedBlogTypeId);
+    const req: WorkflowRequest = {
+      siteUrl,
+      blogTypeId: selectedBlogTypeId,
+      blogTypeName: selectedBlogType?.blogTypeName ?? '',
+      blogUrl,
+      categoryId: selectedCategoryId,
+      blogAccountId: blogId,
+      blogAccountPwd: blogPassword,
+      recurrenceRule,
+    };
+
+    try {
+      setIsTesting(true);
+      setTestStatus('TESTING');
+      setTestErrorMessage(null);
+
+      // testWorkflow API 호출
+      const testResponse = await workflowService.testWorkflow(req);
+
+      if (!testResponse.success) {
+        setTestStatus('TEST_FAILED');
+        setTestErrorMessage(testResponse.message || "워크플로우 테스트에 실패했습니다.");
+        toast({
+          title: "테스트 실패",
+          description: testResponse.message || "워크플로우 테스트에 실패했습니다.",
+          variant: "destructive"
+        });
+        setIsTesting(false);
+        return;
+      }
+
+      // 테스트 워크플로우 ID 저장 (폴링용)
+      setTestWorkflowId(testResponse.data.workflowId);
+
+      // 현재 필드 값 저장 (변경 감지용)
+      setOriginalTestFields({
+        blogId,
+        blogPassword,
+        blogUrl,
+      });
+
+      // 폴링은 useEffect가 자동으로 처리
+    } catch (error) {
+      setTestStatus('TEST_FAILED');
+      setTestErrorMessage("테스트 중 오류가 발생했습니다.");
+      setIsTesting(false);
+      toast({ title: "오류", description: "테스트 실패", variant: "destructive" });
+    }
   };
 
   const handleSubmit = async () => {
+    // 테스트 통과 확인
+    if (testStatus !== 'TEST_PASSED') {
+      toast({
+        title: "테스트 필요",
+        description: "테스트 성공 후 등록이 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 유효성 검사
     if (!siteUrl || !selectedCategoryId || !selectedBlogTypeId || !blogId || !blogPassword || !blogUrl) {
-      return toast({ title: "입력 오류", description: "모든 필드를 입력해주세요.", variant: "destructive" });
+      return toast({ title: "입력 오류", description: "필수 필드를 모두 입력해주세요.", variant: "destructive" });
     }
 
     const ruleError = validateRecurrenceRule(recurrenceRule);
@@ -112,37 +255,49 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
     };
 
     try {
-      setIsLoading(true);
-      const response = await workflowService.createWorkflow(req);
+      setIsRegistering(true);
 
-      if (response.success) {
-        toast({ title: "등록 완료" });
+      // 테스트는 이미 완료되었으므로 바로 등록
+      const registerResponse = await workflowService.registerWorkflow(testWorkflowId!, req);
+
+      if (registerResponse.success) {
+        toast({ title: "등록 완료", description: "워크플로우가 등록되었습니다." });
         onSuccess();
+      } else {
+        toast({
+          title: "등록 실패",
+          description: registerResponse.message || "워크플로우 등록에 실패했습니다.",
+          variant: "destructive"
+        });
       }
-    } catch {
+    } catch (error) {
       toast({ title: "오류", description: "저장 실패", variant: "destructive" });
     } finally {
-      setIsLoading(false);
+      setIsRegistering(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-          className="h-10 w-10 rounded-lg hover:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-2xl font-bold text-foreground">워크플로우 등록</h2>
-      </div>
-
-      {/* 폼 */}
-      <div className="space-y-8">
+    <Card className="card-shadow overflow-hidden">
+      <CardHeader className="bg-muted/40 flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onCancel}
+            className="h-8 w-8 rounded-lg hover:bg-muted -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Workflow className="h-4 w-4" />
+          <span>워크플로우 관리</span>
+        </div>
+        <CardTitle className="text-xl">워크플로우 등록</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          새로운 워크플로우를 등록합니다.
+        </p>
+      </CardHeader>
+      <CardContent className="pt-6 space-y-6">
         {/* URL Section */}
         <div className="rounded-xl border border-border bg-card card-shadow p-6">
           <h3 className="text-lg font-semibold mb-4">사이트 선택</h3>
@@ -322,6 +477,39 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
             </div>
           </div>
         </div>
+        <br />
+
+        {/* 테스트 상태 표시 */}
+        {testStatus === 'TESTING' && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>테스트 진행 중</AlertTitle>
+            <AlertDescription>
+              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_PASSED' && (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-800">테스트 성공</AlertTitle>
+            <AlertDescription className="text-green-700">
+              AI 콘텐츠 생성 및 블로그 업로드 테스트에 성공했습니다. 이제 수정할 수 있습니다.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_FAILED' && testErrorMessage && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>테스트 실패</AlertTitle>
+            <AlertDescription>
+              {testErrorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
+
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3">
@@ -330,20 +518,23 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
             size="lg"
             onClick={handleTest}
             className="px-8"
-            disabled={isLoading}
+            disabled={isTesting || isRegistering || !blogId || !blogPassword || !blogUrl}
           >
-            테스트
+            {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isTesting ? "테스트 중..." : "테스트"}
           </Button>
           <Button
             size="lg"
             onClick={handleSubmit}
             className="px-8"
-            disabled={isLoading}
+            disabled={testStatus !== 'TEST_PASSED' || isRegistering || isTesting}
           >
-            {isLoading ? "처리 중..." : "등록"}
+            {isRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isRegistering ? "등록 중..." : "등록"}
           </Button>
         </div>
-      </div>
-    </div>
+
+      </CardContent>
+    </Card>
   );
 }
