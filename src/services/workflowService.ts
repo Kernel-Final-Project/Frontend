@@ -32,7 +32,7 @@ export interface Workflow {
   blogAccountId: string;
   readableRule: string;
   status: 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'DELETED' | 'COMPLETED';
-  testStatus: 'NOT_TESTED' | 'TEST_PASSED' | 'TEST_FAILED';
+  testStatus: 'TESTING' | 'TEST_PASSED' | 'TEST_FAILED';
   recurrenceRule?: RecurrenceRule;  // 선택적 (응답에서 id와 readableRule 포함)
 }
 
@@ -49,6 +49,14 @@ export interface WorkflowEditResponse {
   setTrendCategory: TrendCategory;
 }
 
+export interface WorkTestResponse {
+  workflowId: number;
+  contentGenerateRequested: boolean;
+  blogUploadCount: number;
+  message: string;
+  testStatus: string;
+}
+
 export interface WorkflowDetailResponse {
   workflowId: number;
   userId: number;
@@ -61,7 +69,7 @@ export interface WorkflowDetailResponse {
   blogUrl: string;
   blogAccountId: string;
   recurrenceRule: RecurrenceRule;
-  setTrendCategory: TrendCategory;
+  setTrendCategory: SetTrendCategory;
 }
 
 export interface TrendCategory {
@@ -69,6 +77,12 @@ export interface TrendCategory {
   depth2Category: number | null;
   depth3Category: number | null;
   mainCategoryName: string;
+}
+
+export interface SetTrendCategory {
+  depth1Category: string;
+  depth2Category: string | null;
+  depth3Category: string | null;
 }
 
 // create/update 공통 요청 타입
@@ -130,6 +144,30 @@ export interface WorkflowPageResponse {
   empty: boolean;
 }
 
+export interface WorkflowTestDetailResponse {
+  workflowId: number;
+  userId: number;
+  userName?: string;
+  siteName: string;
+  siteUrl: string;
+  blogType: string;
+  blogUrl: string;
+  blogAccountId: string;
+  setTrendCategory: SetTrendCategory;
+  recurrenceRule: RecurrenceRule;
+  status: 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'DELETED' | 'COMPLETED';
+  testStatus: 'TESTING' | 'TEST_PASSED' | 'TEST_FAILED';
+  latestWork: TestWorkInfo | null;
+}
+
+export interface TestWorkInfo {
+  workId: number;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  completedAt: string | null;
+  failureReason: string | null;
+}
+
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -155,9 +193,29 @@ export const workflowService = {
     return response.data;
   },
 
-  // 워크플로우 생성
-  async createWorkflow(data: WorkflowRequest): Promise<ApiResponse<Workflow>> {
-    const response = await api.post('/api/v1/workflow', data);
+  // // 워크플로우 생성
+  // async createWorkflow(data: WorkflowRequest): Promise<ApiResponse<Workflow>> {
+  //   const response = await api.post('/api/v1/workflow', data);
+  //   return response.data;
+  // },
+
+  // 워크플로우 테스트
+  async testWorkflow(data: WorkflowRequest, replaceWorkflowId?: number): Promise<ApiResponse<WorkTestResponse>> {
+    const url = replaceWorkflowId
+      ? `/api/v1/workflow/test?replaceWorkflowId=${replaceWorkflowId}`
+      : `/api/v1/workflow/test`;
+    const response = await api.post(url, data);  // data 추가!
+    return response.data;
+  },
+
+  // 워크플로우 등록
+  async registerWorkflow(id: number, data: WorkflowRequest): Promise<ApiResponse<Workflow>> {
+    const response = await api.post(`/api/v1/workflow/${id}/register`, data);
+    return response.data;
+  },
+
+  async getTestWorkflowDetail(workflowId: number): Promise<ApiResponse<WorkflowTestDetailResponse>> {
+    const response = await api.get(`/api/v1/workflow/test/${workflowId}`);
     return response.data;
   },
 

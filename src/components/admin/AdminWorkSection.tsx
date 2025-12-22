@@ -49,18 +49,19 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
     }
   };
 
+  // 페이지 변경 시 (0페이지 제외)
   useEffect(() => {
     if (!active) return;
-    setCurrentPage(0); // workflowId 변경 시 첫 페이지로 리셋
-    fetchWorks(0);
-  }, [active, workflowId]);
+    fetchWorks(currentPage);
+  }, [currentPage])
 
   useEffect(() => {
     if (!active) return;
-    if (currentPage > 0) {
-      fetchWorks(currentPage);
-    }
-  }, [currentPage]);
+    setInitialPage(null);
+    setModalOpen(false);
+    setCurrentPage(0);
+    // fetchWorks(0) 제거 - currentPage useEffect에서 처리
+  }, [active, workflowId]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -148,6 +149,7 @@ export function AdminWorkSection({ active, workflowId }: AdminWorkSectionProps) 
           <>
             <AdminWorkTable
               works={filtered}
+              currentPage={currentPage}
               onSelect={(workId) => {
                 const selected = works.find(w => w.workId === workId);
                 if (selected) {

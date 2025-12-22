@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/common/Header";
 import { WorkflowTable } from "@/components/workflow/WorkflowTable";
 import { Pagination } from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, Loader2, Workflow as WorkflowIcon, Search, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { workflowService, Workflow } from '@/services/workflowService';
 import { ScheduleDialog } from "@/components/workflow/ScheduleDialog";
@@ -26,6 +30,9 @@ const Workflows = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [selectedWorkflowSchedule, setSelectedWorkflowSchedule] = useState<string>("");
@@ -42,13 +49,31 @@ const Workflows = () => {
         setWorkflows(response.data.content);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
+        setError(null);
       }
-    } catch (error) {
-      console.error("워크플로우 목록 조회 실패:", error);
+    } catch (err) {
+      const msg =
+        (err as any)?.response?.data?.message ||
+        (err as Error)?.message ||
+        "워크플로우 목록을 불러오지 못했습니다.";
+      setError(msg);
+      console.error("워크플로우 목록 조회 실패:", err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // 검색 필터링
+  const filteredWorkflows = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return workflows;
+    return workflows.filter(
+      (w) =>
+        w.siteName.toLowerCase().includes(q) ||
+        w.siteUrl.toLowerCase().includes(q) ||
+        w.blogType.toLowerCase().includes(q)
+    );
+  }, [workflows, searchQuery]);
 
   // 페이지 로드 시 또는 페이지 변경 시 데이터 가져오기
   useEffect(() => {
@@ -58,6 +83,17 @@ const Workflows = () => {
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page - 1); // UI는 1부터, 백엔드는 0부터
+  };
+
+  // 검색 핸들러
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   const handleSchedule = (id: number) => {
@@ -114,52 +150,87 @@ const Workflows = () => {
       <Header />
 
       <main className="container pt-24 pb-12">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">워크플로우 관리</h1>
-          <p className="mt-1 text-muted-foreground">등록된 워크플로우를 관리하세요</p>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="text-sm text-muted-foreground">
-            전체 {totalElements}건
-          </div>
-          <Button className="gap-2" onClick={() => navigate("/workflows/add")}>
-            <Plus className="w-4 h-4" />
-            등록
-          </Button>
-        </div>
-
-        {/* Loading State */}
-        {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <>
-            {/* Table */}
-            <div>
-              <WorkflowTable
-                workflows={workflows}
-                onSchedule={handleSchedule}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
+        {/* Card Container */}
+        <Card className="card-shadow overflow-hidden">
+          <CardHeader className="bg-muted/40 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <WorkflowIcon className="h-4 w-4" />
+                <span>워크플로우 관리</span>
+              </div>
+              <Button className="gap-2" onClick={() => navigate("/workflows/add")}>
+                <Plus className="w-4 h-4" />
+                등록
+              </Button>
+            </div>
+            <CardTitle className="text-2xl">워크플로우 관리</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              등록된 워크플로우를 조회하고 관리할 수 있습니다.
+            </p>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            {/* Search Bar and Count */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="사이트명, 사이트 URL 또는 블로그 타입으로 검색"
+                  className="w-full sm:w-80"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSearch}
+                  className="flex-shrink-0"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">
+                전체 {totalElements}건
+              </Badge>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 0 && (
-              <div>
-                <Pagination
-                  currentPage={currentPage + 1} // UI에는 1부터 표시
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+            {/* Loading/Error/Empty/Data States */}
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                불러오는 중입니다...
               </div>
+            ) : error ? (
+              <Alert variant="destructive">
+                <AlertCircle className="h-5 w-5" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : filteredWorkflows.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border bg-background/70 py-10 text-center text-muted-foreground">
+                조건에 맞는 워크플로우가 없습니다.
+              </div>
+            ) : (
+              <>
+                <WorkflowTable
+                  workflows={filteredWorkflows}
+                  onSchedule={handleSchedule}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination
+                      currentPage={currentPage + 1}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </CardContent>
+        </Card>
       </main>
 
       {/* Schedule Dialog */}

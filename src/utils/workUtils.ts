@@ -2,11 +2,12 @@ import { Work } from '@/services/workService';
 
 export interface BlogLink {
   id: number;
+  choiceProduct: string;
   blogLink: string;
   product: string;
   executionTime: string;
-  status: string;
-  statusDisplay: "발행 완료" | "발행중" | "발행 실패";
+  status: string;  // 한글 상태명
+  rawStatus: Work['status'];  // 원본 영문 상태값
 }
 
 // Work 상태를 한글로 변환
@@ -24,26 +25,6 @@ export const mapWorkStatusToKorean = (status: Work['status']): string => {
   return statusMap[status] || status;
 };
 
-// Work 상태를 프론트엔드 표시용 상태로 변환 (배지 색상용)
-export const mapWorkStatusToDisplay = (
-  status: Work['status']
-): BlogLink['statusDisplay'] => {
-  switch (status) {
-    case 'COMPLETED':
-      return '발행 완료';
-    case 'FAILED':
-      return '발행 실패';
-    case 'PENDING':
-    case 'REQUESTED':
-    case 'TREND_KEYWORD_DONE':
-    case 'PRODUCT_SELECTED':
-    case 'CONTENT_GENERATED':
-    case 'BLOG_UPLOAD_PENDING':
-      return '발행중';
-    default:
-      return '발행중';
-  }
-};
 
 // ISO 날짜를 "YYYY.MM.DD HH:mm" 포맷으로 변환
 export const formatDateTime = (isoString: string | null): string => {
@@ -114,10 +95,11 @@ export const formatRecurrenceRule = (rule: {
 export const convertWorkToBlogLink = (work: Work): BlogLink => {
   return {
     id: work.workId,
+    choiceProduct: work.choiceProduct || '-',
     blogLink: work.postingUrl || '-',
     product: work.choiceProduct || '-',
     executionTime: formatDateTime(work.completedAt),
     status: mapWorkStatusToKorean(work.status),
-    statusDisplay: mapWorkStatusToDisplay(work.status),
+    rawStatus: work.status,
   };
 };

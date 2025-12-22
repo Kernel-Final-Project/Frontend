@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Globe, Link2, Calendar, Tag, Settings, User, Pencil, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Globe, Link2, Calendar, Tag, Settings, User, Pencil, Trash2, Clock, Repeat } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { WorkflowDetailResponse, workflowService } from "@/services/workflowService";
+import { getNextExecutionDates } from "@/utils/recurrenceRuleHelper";
 
 type AdminWorkflowDetailContentProps = {
   workflow: WorkflowDetailResponse;
@@ -30,6 +32,7 @@ const statusVariant: Record<
 > = {
   ACTIVE: "success",
   PENDING: "warning",
+  PRE_REGISTERED: "outline",
   INACTIVE: "secondary",
   DELETED: "destructive",
   COMPLETED: "success",
@@ -41,6 +44,7 @@ const statusVariant: Record<
 const statusLabels: Record<string, string> = {
   ACTIVE: "활성",
   PENDING: "대기",
+  PRE_REGISTERED: "등록 대기",
   INACTIVE: "비활성",
   DELETED: "삭제됨",
   COMPLETED: "완료",
@@ -52,6 +56,7 @@ const statusLabels: Record<string, string> = {
 export function AdminWorkflowDetailContent({ workflow, onNavigateToUser, onDelete, onEdit, onUpdate }: AdminWorkflowDetailContentProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<string | null>(null);
+  const [executionDates, setExecutionDates] = useState<Date[]>([]);
 
   console.log("AdminWorkflowDetailContent rendered with workflow:", workflow);
   console.log("onNavigateToUser function:", onNavigateToUser);
@@ -60,6 +65,14 @@ export function AdminWorkflowDetailContent({ workflow, onNavigateToUser, onDelet
   useEffect(() => {
     setOptimisticStatus(null);
   }, [workflow.status]);
+
+  // 실행 예정일 계산
+  useEffect(() => {
+    if (workflow.recurrenceRule) {
+      const dates = getNextExecutionDates(workflow.recurrenceRule, 10);
+      setExecutionDates(dates);
+    }
+  }, [workflow.recurrenceRule]);
 
   // 낙관적 업데이트: 실제 상태 또는 임시 상태 사용
   const displayStatus = optimisticStatus || workflow.status;
@@ -264,24 +277,72 @@ export function AdminWorkflowDetailContent({ workflow, onNavigateToUser, onDelet
               <Calendar className="h-4 w-4" />
               실행 일정
             </h3>
-            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">반복 유형</p>
-                <p className="text-sm text-foreground font-medium">{workflow.recurrenceRule.repeatType}</p>
+
+            {/* 반복 규칙 요약 */}
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
+              <Label className="text-sm font-medium mb-1.5 block">반복 규칙 | {workflow.recurrenceRule.readableRule}</Label>
+              <div className="space-y-1 text-sm">
+                <p className="flex gap-2 text-sm items-center">
+                  <Calendar className="w-4 h-4" />
+                  <span className="font-medium">
+                    {workflow.recurrenceRule.startAt.split("T")[0]}{workflow.recurrenceRule.endAt ? ` ~ ${workflow.recurrenceRule.endAt.split("T")[0]}` : ''}
+                  </span>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <Repeat className="w-4 h-4 ml-3" />
+                  <span className="font-medium">
+                    {workflow.recurrenceRule.repeatType === 'ONCE' && '한번만'}
+                    {workflow.recurrenceRule.repeatType === 'DAILY' && '매일'}
+                    {workflow.recurrenceRule.repeatType === 'WEEKLY' && '매주'}
+                    {workflow.recurrenceRule.repeatType === 'MONTHLY' && '매월'}
+                    {workflow.recurrenceRule.repeatType === 'CUSTOM' && '사용자 정의'}
+                  </span>
+                </p>
+                {workflow.recurrenceRule.timesOfDay && (
+                  <p className="flex gap-2 text-sm items-center">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium">
+                      {workflow.recurrenceRule.timesOfDay.join(', ')}
+                    </span>
+                  </p>
+                )}
               </div>
-              {workflow.recurrenceRule.timesOfDay && workflow.recurrenceRule.timesOfDay.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">실행 시간</p>
-                  <div className="flex gap-1 flex-wrap">
-                    {workflow.recurrenceRule.timesOfDay.map((time, idx) => (
-                      <Badge key={idx} variant="outline" className="font-mono">
-                        {time}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {/* 실행 예정일 목록 */}
+            {executionDates.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">다음 실행 예정일 (최대 10개)</Label>
+                <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+                  {executionDates.map((date, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <p className="font-mono font-medium text-foreground">
+                            {date.getFullYear()}.
+                            {String(date.getMonth() + 1).padStart(2, '0')}.
+                            {String(date.getDate()).padStart(2, '0')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'][date.getDay()]}
+                          </p>
+                        </div>
+                      </div>
+                      {workflow.recurrenceRule?.timesOfDay && (
+                        <div className="text-sm text-muted-foreground">
+                          {workflow.recurrenceRule.timesOfDay.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

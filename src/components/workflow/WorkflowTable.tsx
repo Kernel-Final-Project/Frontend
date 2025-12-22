@@ -11,7 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Pencil, Trash2 } from "lucide-react";
 import { Workflow } from "@/services/workflowService";
-import { formatRecurrenceRule } from "@/utils/workUtils";
 
 interface WorkflowTableProps {
   workflows: Workflow[];
@@ -20,32 +19,33 @@ interface WorkflowTableProps {
   onDelete: (id: number) => void;
 }
 
-// 상태를 한글로 변환하는 함수
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "활성";
-    case "PENDING":
-      return "대기";
-    case "INACTIVE":
-      return "비활성";
-    default:
-      return status;
-  }
+// 상태 variant 매핑 (관리자 페이지와 통일)
+const statusVariant: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "dark"
+> = {
+  ACTIVE: "success",
+  PENDING: "warning",
+  PRE_REGISTERED: "outline",
+  INACTIVE: "secondary",
+  DELETED: "destructive",
+  COMPLETED: "success",
+  NOT_TESTED: "outline",
+  TEST_PASSED: "success",
+  TEST_FAILED: "destructive",
 };
 
-// 상태에 따른 variant 반환
-const getStatusVariant = (status: string): "default" | "secondary" | "outline" => {
-  switch (status) {
-    case "ACTIVE":
-      return "default";
-    case "PENDING":
-      return "outline";
-    case "INACTIVE":
-      return "secondary";
-    default:
-      return "secondary";
-  }
+// 상태 한글 레이블 매핑
+const statusLabels: Record<string, string> = {
+  ACTIVE: "활성",
+  PENDING: "대기",
+  PRE_REGISTERED: "등록 대기",
+  INACTIVE: "비활성",
+  DELETED: "삭제됨",
+  COMPLETED: "완료",
+  NOT_TESTED: "테스트 전",
+  TEST_PASSED: "테스트 통과",
+  TEST_FAILED: "테스트 실패",
 };
 
 export function WorkflowTable({ workflows, onSchedule, onEdit, onDelete }: WorkflowTableProps) {
@@ -60,13 +60,14 @@ export function WorkflowTable({ workflows, onSchedule, onEdit, onDelete }: Workf
       <Table className="table-fixed">
         <TableHeader>
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-            <TableHead className="font-semibold w-20 text-center">No</TableHead>
-            <TableHead className="font-semibold w-32 text-center ">사이트</TableHead>
-            <TableHead className="font-semibold w-40 text-center">트렌드 카테고리</TableHead>
-            <TableHead className="font-semibold w-32 text-center">블로그</TableHead>
-            <TableHead className="font-semibold w-40 text-center">블로그 계정</TableHead>
-            <TableHead className="font-semibold w-20 text-center ">상태</TableHead>
-            <TableHead className="font-semibold w-32 text-center">관리</TableHead>
+            <TableHead className="w-[5%] text-center font-semibold">No</TableHead>
+            <TableHead className="w-[10%] text-center font-semibold">사이트명</TableHead>
+            <TableHead className="w-[20%] text-center font-semibold">사이트 URL</TableHead>
+            <TableHead className="w-[12%] text-center font-semibold">블로그</TableHead>
+            <TableHead className="w-[15%] text-center font-semibold">대표 카테고리</TableHead>
+            <TableHead className="w-[10%] text-center font-semibold">상태</TableHead>
+            <TableHead className="w-[13%] text-center font-semibold">테스트 상태</TableHead>
+            <TableHead className="w-[15%] text-center font-semibold">관리</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -80,26 +81,41 @@ export function WorkflowTable({ workflows, onSchedule, onEdit, onDelete }: Workf
             workflows.map((workflow, index) => (
               <TableRow
                 key={workflow.workflowId}
-                className="transition-colors hover:bg-muted/50 cursor-pointer text-center"
+                className="transition-colors hover:bg-muted/50 cursor-pointer"
                 style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => handleRowClick(workflow)}
               >
-                <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={getStatusVariant(workflow.status)}
-                    className={workflow.status === "ACTIVE" ? "bg-[hsl(var(--status-active))] hover:bg-[hsl(var(--status-active))] text-center" : ""}
-                  >
-                    {getStatusLabel(workflow.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-medium max-w-[200px] truncate">
+                <TableCell className="font-medium text-center">{index + 1}</TableCell>
+                <TableCell className="font-medium text-center max-w-[200px] truncate">
                   {workflow.siteName}
                 </TableCell>
-                <TableCell>{workflow.trendCategoryName}</TableCell>
-                <TableCell>{workflow.blogType}</TableCell>
-                <TableCell className="text-muted-foreground">{workflow.blogAccountId}</TableCell>
                 <TableCell>
+                  <a
+                    href={workflow.siteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {workflow.siteUrl}
+                  </a>
+                </TableCell>
+                <TableCell className="text-center">{workflow.blogType}</TableCell>
+                <TableCell className="text-center">{workflow.trendCategoryName}</TableCell>
+                <TableCell className="text-center">
+                  <Badge
+                    variant={statusVariant[workflow.status] ?? "default"}
+                    className="tracking-tight"
+                  >
+                    {statusLabels[workflow.status] || workflow.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant={statusVariant[workflow.testStatus] ?? "outline"}>
+                    {statusLabels[workflow.testStatus] || workflow.testStatus}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"

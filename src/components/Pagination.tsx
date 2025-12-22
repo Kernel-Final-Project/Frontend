@@ -15,33 +15,32 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={(e) => { e.preventDefault(); onPageChange(currentPage - 1); }}
         disabled={currentPage === 1}
         className="h-9 w-9"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      
+
       {pages.map((page) => (
         <Button
           key={page}
           variant={currentPage === page ? "default" : "ghost"}
           size="icon"
-          onClick={() => onPageChange(page)}
-          className={`h-9 w-9 ${
-            currentPage === page 
-              ? "bg-primary text-primary-foreground" 
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          onClick={(e) => { e.preventDefault(); onPageChange(page); }}
+          className={`h-9 w-9 ${currentPage === page
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           {page}
         </Button>
       ))}
-      
+
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={(e) => { e.preventDefault(); onPageChange(currentPage + 1); }}
         disabled={currentPage === totalPages}
         className="h-9 w-9"
       >

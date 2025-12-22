@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, BlogType, Category } from '@/services/workflowService';
 import { RecurrenceRuleForm } from '@/components/workflow/RecurrenceRuleForm';
 import { validateRecurrenceRule } from '@/utils/recurrenceRuleHelper';
 import naverBlogLogo from '/naverBlog_logo.png';
 import tistoryLogo from '/tistory_logo.png';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
 const AddWorkflow = () => {
   const navigate = useNavigate();
@@ -20,6 +22,17 @@ const AddWorkflow = () => {
   const workflowId = id ? Number(id) : null;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [testStatus, setTestStatus] = useState<'NOT_TESTED' | 'TESTING' | 'TEST_PASSED' | 'TEST_FAILED'>('NOT_TESTED');
+  const [testWorkflowId, setTestWorkflowId] = useState<number | null>(null);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testErrorMessage, setTestErrorMessage] = useState<string | null>(null);
+  const [originalTestFields, setOriginalTestFields] = useState<{
+    blogId: string;
+    blogPassword: string;
+    blogUrl: string;
+  } | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+
   const [sites, setSites] = useState<SiteInfo[]>([]);
   const [blogTypes, setBlogTypes] = useState<BlogType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -125,6 +138,57 @@ const AddWorkflow = () => {
 
   }, [workflowData, categories]);
 
+  // 테스트 상태 폴링
+  useEffect(() => {
+    if (testStatus !== 'TESTING' || !testWorkflowId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
+        if (response.success) {
+          const status = response.data.testStatus;
+          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
+            setTestStatus(status);
+            setIsTesting(false);
+            clearInterval(interval);
+
+            if (status === 'TEST_PASSED') {
+              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
+              setTestErrorMessage(null);
+            } else {
+              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
+              setTestErrorMessage(failureReason);
+              toast({ title: "테스트 실패", description: failureReason, variant: "destructive" });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('테스트 상태 조회 실패:', error);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [testStatus, testWorkflowId]);
+
+
+  // 계정 정보 변경 시 테스트 초기화
+  useEffect(() => {
+    if (!originalTestFields || testStatus !== 'TEST_PASSED') return;
+
+    const fieldsChanged =
+      blogId !== originalTestFields.blogId ||
+      blogPassword !== originalTestFields.blogPassword ||
+      blogUrl !== originalTestFields.blogUrl;
+
+    if (fieldsChanged) {
+      setTestStatus('NOT_TESTED');
+      setTestWorkflowId(null);
+      setTestErrorMessage(null);
+      setOriginalTestFields(null);
+    }
+  }, [blogId, blogPassword, blogUrl, originalTestFields, testStatus]);
+
+
   // ==============================
   // 카테고리 변경 핸들러
   // ==============================
@@ -149,14 +213,81 @@ const AddWorkflow = () => {
     setSelectedCategoryId(selected?.categoryId || null);
   };
 
-  const handleTest = () => {
+  const handleTest = async () => {
     if (!blogId || !blogPassword || !blogUrl) {
-      toast({ title: "알림", description: "블로그 계정 정보를 모두 입력해주세요.", variant: "destructive", }); return;
+      toast({ title: "알림", description: "블로그 계정 정보를 모두 입력해주세요.", variant: "destructive" });
+      return;
     }
-    toast({ title: "테스트 진행", description: "블로그 계정 연결 테스트를 진행합니다.", });
+
+    if (!siteUrl || !selectedCategoryId || !selectedBlogTypeId) {
+      toast({ title: "입력 오류", description: "모든 필수 필드를 입력해주세요.", variant: "destructive" });
+      return;
+    }
+
+    const ruleError = validateRecurrenceRule(recurrenceRule);
+    if (ruleError) {
+      toast({ title: "반복 규칙 오류", description: ruleError, variant: "destructive" });
+      return;
+    }
+
+    const selectedBlogType = blogTypes.find(bt => bt.blogTypeId === selectedBlogTypeId);
+    const req: WorkflowRequest = {
+      siteUrl,
+      blogTypeId: selectedBlogTypeId,
+      blogTypeName: selectedBlogType?.blogTypeName ?? '',
+      blogUrl,
+      categoryId: selectedCategoryId,
+      blogAccountId: blogId,
+      blogAccountPwd: blogPassword,
+      recurrenceRule,
+    };
+
+    try {
+      setIsTesting(true);
+      setTestStatus('TESTING');
+      setTestErrorMessage(null);
+
+      // Edit 모드일 때는 replaceWorkflowId 전달
+      const testResponse = isEditMode
+        ? await workflowService.testWorkflow(req, workflowId!)
+        : await workflowService.testWorkflow(req);
+
+      if (!testResponse.success) {
+        setTestStatus('TEST_FAILED');
+        setTestErrorMessage(testResponse.message || "워크플로우 테스트에 실패했습니다.");
+        toast({
+          title: "테스트 실패",
+          description: testResponse.message || "워크플로우 테스트에 실패했습니다.",
+          variant: "destructive"
+        });
+        setIsTesting(false);
+        return;
+      }
+
+      setTestWorkflowId(testResponse.data.workflowId);
+      setOriginalTestFields({
+        blogId,
+        blogPassword,
+        blogUrl,
+      });
+    } catch (error) {
+      setTestStatus('TEST_FAILED');
+      setTestErrorMessage("테스트 중 오류가 발생했습니다.");
+      setIsTesting(false);
+      toast({ title: "오류", description: "테스트 실패", variant: "destructive" });
+    }
   };
 
   const handleSubmit = async () => {
+    if (testStatus !== 'TEST_PASSED') {
+      toast({
+        title: "테스트 필요",
+        description: "테스트 성공 후 등록이 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!siteUrl || !selectedCategoryId || !selectedBlogTypeId || !blogId || !blogPassword || !blogUrl) {
       return toast({ title: "입력 오류", description: "모든 필드를 입력해주세요.", variant: "destructive" });
     }
@@ -180,9 +311,11 @@ const AddWorkflow = () => {
     };
 
     try {
-      const response = isEditMode
-        ? await workflowService.updateWorkflow(workflowId!, req)
-        : await workflowService.createWorkflow(req);
+      setIsRegistering(true);
+
+      // 테스트는 이미 완료, 바로 등록
+      // edit/create 모두 testWorkflowId 사용
+      const response = await workflowService.registerWorkflow(testWorkflowId!, req);
 
       if (response.success) {
         toast({ title: isEditMode ? "수정 완료" : "등록 완료" });
@@ -190,15 +323,18 @@ const AddWorkflow = () => {
         const from = params.get('from');
 
         if (from === 'admin') {
-          navigate('/admin', { state: { section: 'workflow' } });  // 관리자 워크플로우 섹션으로
+          navigate('/admin', { state: { section: 'workflow' } });
         } else {
-          navigate('/workflows');  // 사용자 워크플로우 목록으로
+          navigate('/workflows');
         }
       }
-    } catch {
+    } catch (error) {
       toast({ title: "오류", description: "저장 실패", variant: "destructive" });
+    } finally {
+      setIsRegistering(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -208,20 +344,16 @@ const AddWorkflow = () => {
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/workflows")}
+              className="h-10 w-10 rounded-lg hover:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             {isEditMode ? "워크플로우 수정" : "워크플로우 등록"}
           </h1>
-        </div>
-
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/workflows")}
-            className="h-10 w-10 rounded-lg hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
         </div>
 
         {/* Form Container */}
@@ -409,6 +541,39 @@ const AddWorkflow = () => {
             </div>
           </div>
         </div>
+        <br />
+
+        {/* 테스트 상태 표시 */}
+        {testStatus === 'TESTING' && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>테스트 진행 중</AlertTitle>
+            <AlertDescription>
+              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_PASSED' && (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-800">테스트 성공</AlertTitle>
+            <AlertDescription className="text-green-700">
+              AI 콘텐츠 생성 및 블로그 업로드 테스트에 성공했습니다. 이제 {isEditMode ? "수정" : "등록"}할 수 있습니다.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_FAILED' && testErrorMessage && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>테스트 실패</AlertTitle>
+            <AlertDescription>
+              {testErrorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
+        <br />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-6">
@@ -417,19 +582,22 @@ const AddWorkflow = () => {
             size="lg"
             onClick={handleTest}
             className="px-8"
-            disabled={isLoading}
+            disabled={isTesting || isRegistering || !blogId || !blogPassword || !blogUrl}
           >
-            테스트
+            {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isTesting ? "테스트 중..." : "테스트"}
           </Button>
           <Button
             size="lg"
             onClick={handleSubmit}
             className="px-8"
-            disabled={isLoading}
+            disabled={testStatus !== 'TEST_PASSED' || isRegistering || isTesting}
           >
-            {isLoading ? "처리 중..." : isEditMode ? "수정" : "등록"}
+            {isRegistering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isRegistering ? "처리 중..." : isEditMode ? "수정" : "등록"}
           </Button>
         </div>
+
       </main >
     </div>
   );
