@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/authService";
+import { MySiteRequestsCard } from "@/components/mypage/MySiteRequestsCard";
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -133,6 +134,9 @@ const MyPage = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* 사이트 요청 목록 */}
+              <MySiteRequestsCard />
             </div>
           </div>
         </div>
