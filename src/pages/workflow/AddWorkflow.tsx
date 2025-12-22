@@ -165,7 +165,7 @@ const AddWorkflow = () => {
       } catch (error) {
         console.error('테스트 상태 조회 실패:', error);
       }
-    }, 2000);
+    }, 30000); // 폴링 주기 30초
 
     return () => clearInterval(interval);
   }, [testStatus, testWorkflowId]);
@@ -549,7 +549,7 @@ const AddWorkflow = () => {
             <Loader2 className="h-4 w-4 animate-spin" />
             <AlertTitle>테스트 진행 중</AlertTitle>
             <AlertDescription>
-              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
+              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 몇 분 정도 소요될 수 있으니 페이지를 이동하지 말고 기다려주세요.
             </AlertDescription>
           </Alert>
         )}
