@@ -138,57 +138,6 @@ const AddWorkflow = () => {
 
   }, [workflowData, categories]);
 
-  // 테스트 상태 폴링
-  useEffect(() => {
-    if (testStatus !== 'TESTING' || !testWorkflowId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
-        if (response.success) {
-          const status = response.data.testStatus;
-          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
-            setTestStatus(status);
-            setIsTesting(false);
-            clearInterval(interval);
-
-            if (status === 'TEST_PASSED') {
-              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
-              setTestErrorMessage(null);
-            } else {
-              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
-              setTestErrorMessage(failureReason);
-              toast({ title: "테스트 실패", description: failureReason, variant: "destructive" });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('테스트 상태 조회 실패:', error);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [testStatus, testWorkflowId]);
-
-
-  // 계정 정보 변경 시 테스트 초기화
-  useEffect(() => {
-    if (!originalTestFields || testStatus !== 'TEST_PASSED') return;
-
-    const fieldsChanged =
-      blogId !== originalTestFields.blogId ||
-      blogPassword !== originalTestFields.blogPassword ||
-      blogUrl !== originalTestFields.blogUrl;
-
-    if (fieldsChanged) {
-      setTestStatus('NOT_TESTED');
-      setTestWorkflowId(null);
-      setTestErrorMessage(null);
-      setOriginalTestFields(null);
-    }
-  }, [blogId, blogPassword, blogUrl, originalTestFields, testStatus]);
-
-
   // ==============================
   // 카테고리 변경 핸들러
   // ==============================
@@ -541,39 +490,6 @@ const AddWorkflow = () => {
             </div>
           </div>
         </div>
-        <br />
-
-        {/* 테스트 상태 표시 */}
-        {testStatus === 'TESTING' && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <AlertTitle>테스트 진행 중</AlertTitle>
-            <AlertDescription>
-              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {testStatus === 'TEST_PASSED' && (
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertTitle className="text-green-800">테스트 성공</AlertTitle>
-            <AlertDescription className="text-green-700">
-              AI 콘텐츠 생성 및 블로그 업로드 테스트에 성공했습니다. 이제 {isEditMode ? "수정" : "등록"}할 수 있습니다.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {testStatus === 'TEST_FAILED' && testErrorMessage && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>테스트 실패</AlertTitle>
-            <AlertDescription>
-              {testErrorMessage}
-            </AlertDescription>
-          </Alert>
-        )}
-        <br />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-6">
