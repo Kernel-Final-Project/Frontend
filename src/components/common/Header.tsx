@@ -13,11 +13,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SiteRequestDialog } from "@/components/site/SiteRequestDialog";
 
-const navItems = [
+type NavItem = {
+  label: string;
+  href?: string;
+  type?: "link" | "action";
+};
+
+const navItems: NavItem[] = [
   { label: "워크플로우 관리", href: "/workflows" },
   { label: "이용 안내", href: "/howToUse" },
-  { label: "사이트 등록 요청", href: "/howToUse" },
+  { label: "사이트 등록 요청", type: "action" },
   { label: "공지사항", href: "/notices" }
 ];
 
@@ -27,6 +34,7 @@ type HeaderProps = {
 
 export function Header({ onLoginClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSiteRequestOpen, setIsSiteRequestOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -48,21 +56,37 @@ export function Header({ onLoginClick }: HeaderProps) {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-12">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.href}
-              className="text-sm font-semibold text-muted-foreground transition-colors"
-              style={{
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5271ff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = ''}
-              activeClassName="text-primary font-semibold"
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            if (item.type === "action") {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => setIsSiteRequestOpen(true)}
+                  className="text-sm font-semibold text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none"
+                  style={{ transition: "color 0.2s" }}
+                >
+                  {item.label}
+                </button>
+              );
+            }
+
+            return (
+              <NavLink
+                key={item.label}
+                to={item.href!}
+                className="text-sm font-semibold text-muted-foreground transition-colors"
+                style={{
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#5271ff'}
+                onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                activeClassName="text-primary font-semibold"
+              >
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -161,15 +185,29 @@ export function Header({ onLoginClick }: HeaderProps) {
             )}
 
             {navItems.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                activeClassName="text-primary font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </NavLink>
+              item.type === "action" ? (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsSiteRequestOpen(true);
+                  }}
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <NavLink
+                  key={item.label}
+                  to={item.href!}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  activeClassName="text-primary font-semibold"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </NavLink>
+              )
             ))}
 
             {isLoading ? (
@@ -212,8 +250,9 @@ export function Header({ onLoginClick }: HeaderProps) {
               </Button>
             )}
           </nav>
-        </div>
+      </div>
       )}
+      <SiteRequestDialog open={isSiteRequestOpen} onOpenChange={setIsSiteRequestOpen} />
     </header>
   );
 }
