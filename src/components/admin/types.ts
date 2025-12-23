@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
-export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats";
+export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats" | "blog";
 
 export type AdminNavItem = {
   id: AdminSection;
@@ -60,3 +60,18 @@ export type NormalizedUserStatPoint = {
 
 export type DailyRange = { start: string; end: string };
 export type WeeklyPeriod = { year: number; month: number };
+
+export type BlogStatPoint = {
+  statDate?: string;
+  week?: string;
+  startDate?: string;
+  endDate?: string;
+  yearMonth?: string;
+  postCount: number;
+};
+
+export type NormalizedBlogStatPoint = {
+  label: string;
+  postCount: number;
+  postGrowthRate: number;
+};

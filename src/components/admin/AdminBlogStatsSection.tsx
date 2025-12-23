@@ -3,23 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, BarChart3, Loader2 } from "lucide-react";
 import { statisticsService } from "@/services/statisticsService";
-import { DailyRange, Granularity, NormalizedUserStatPoint, WeeklyPeriod } from "./types";
-import { AdminUserStatsControls } from "./AdminUserStatsControls";
-import { AdminUserStatsSummary } from "./AdminUserStatsSummary";
-import { AdminUserStatsChart } from "./AdminUserStatsChart";
-import { AdminUserStatsTable } from "./AdminUserStatsTable";
-import { defaultDailyRange, defaultMonthlyYear, defaultWeeklyPeriod, normalizeUserStats } from "./userStatsUtils";
+import { DailyRange, Granularity, NormalizedBlogStatPoint, WeeklyPeriod } from "./types";
+import { AdminBlogStatsControls } from "./AdminBlogStatsControls";
+import { AdminBlogStatsSummary } from "./AdminBlogStatsSummary";
+import { AdminBlogStatsChart } from "./AdminBlogStatsChart";
+import { AdminBlogStatsTable } from "./AdminBlogStatsTable";
+import { defaultDailyRange, defaultMonthlyYear, defaultWeeklyPeriod, normalizeBlogStats } from "./blogStatsUtils";
 
-type AdminUserStatsSectionProps = {
+type AdminBlogStatsSectionProps = {
   active: boolean;
 };
 
-export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
+export function AdminBlogStatsSection({ active }: AdminBlogStatsSectionProps) {
   const [granularity, setGranularity] = useState<Granularity>("daily");
   const [dailyRange, setDailyRange] = useState<DailyRange>(defaultDailyRange());
   const [weeklyPeriod, setWeeklyPeriod] = useState<WeeklyPeriod>(defaultWeeklyPeriod());
   const [monthlyYear, setMonthlyYear] = useState<number>(defaultMonthlyYear());
-  const [data, setData] = useState<NormalizedUserStatPoint[]>([]);
+  const [data, setData] = useState<NormalizedBlogStatPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isReaggregating, setIsReaggregating] = useState(false);
@@ -29,28 +29,28 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
       setLoading(true);
       const raw =
         granularity === "daily"
-          ? await statisticsService.getUserStats({
+          ? await statisticsService.getBlogStats({
               granularity,
               startDate: dailyRange.start,
               endDate: dailyRange.end,
             })
           : granularity === "weekly"
-          ? await statisticsService.getUserStats({
+          ? await statisticsService.getBlogStats({
               granularity,
               year: weeklyPeriod.year,
               month: weeklyPeriod.month,
             })
-          : await statisticsService.getUserStats({
+          : await statisticsService.getBlogStats({
               granularity,
               year: monthlyYear,
             });
-      setData(normalizeUserStats(granularity, raw));
+      setData(normalizeBlogStats(granularity, raw));
       setError(null);
     } catch (err) {
       const msg =
         (err as any)?.response?.data?.message ||
         (err as Error)?.message ||
-        "사용자 통계를 불러오지 못했습니다.";
+        "블로그 통계를 불러오지 못했습니다.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -97,13 +97,13 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
       <CardHeader className="bg-muted/40 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <BarChart3 className="h-4 w-4" />
-          <span>사용자 통계</span>
+          <span>블로그 통계</span>
         </div>
-        <CardTitle className="text-xl">가입/활성 사용자 추이</CardTitle>
-        <p className="text-sm text-muted-foreground">기간과 단위를 선택해 사용자 추이를 확인하세요.</p>
+        <CardTitle className="text-xl">포스트 발행 추이</CardTitle>
+        <p className="text-sm text-muted-foreground">기간과 단위를 선택해 블로그 포스트 추이를 확인하세요.</p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <AdminUserStatsControls
+        <AdminBlogStatsControls
           granularity={granularity}
           dailyRange={dailyRange}
           weeklyPeriod={weeklyPeriod}
@@ -143,7 +143,7 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
           </div>
         ) : (
           <>
-            <AdminUserStatsSummary
+            <AdminBlogStatsSummary
               latest={latest}
               granularity={granularity}
               dailyRange={dailyRange}
@@ -151,9 +151,9 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
               monthlyYear={monthlyYear}
             />
 
-            <AdminUserStatsChart data={data} />
+            <AdminBlogStatsChart data={data} />
 
-            <AdminUserStatsTable data={data} />
+            <AdminBlogStatsTable data={data} />
           </>
         )}
       </CardContent>
