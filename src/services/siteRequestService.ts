@@ -5,7 +5,7 @@ import { ApiResponse } from "./workflowService";
  * TYPES
  * ========================= */
 
-export type SiteRequestState = "PENDING" | "APPROVED" | "REJECTED";
+export type SiteRequestState = "RECEIVED" | "APPROVED" | "REJECTED";
 
 export interface SiteRequestPayload {
   siteUrl: string;
@@ -18,7 +18,7 @@ export interface SiteRequestResponse {
   siteUrl: string;
   siteName: string;
   state: SiteRequestState;
-  description: string;
+  description: string | null;
   createdAt: string;
 }
 

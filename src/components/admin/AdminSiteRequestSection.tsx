@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Loader2, Globe } from "lucide-react";
-import { siteRequestService } from "@/services/siteRequestService";
+import { siteRequestService, SiteRequestResponse } from "@/services/siteRequestService";
 import { AdminSiteRequestTable } from "./AdminSiteRequestTable";
-import { SiteRequest } from "./types";
 import { Pagination } from "@/components/Pagination";
 import { toast } from "@/hooks/use-toast";
 
@@ -14,7 +13,7 @@ type AdminSiteRequestSectionProps = {
 };
 
 export function AdminSiteRequestSection({ active }: AdminSiteRequestSectionProps) {
-  const [requests, setRequests] = useState<SiteRequest[]>([]);
+  const [requests, setRequests] = useState<SiteRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);

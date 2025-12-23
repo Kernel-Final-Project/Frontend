@@ -9,10 +9,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
-import { SiteRequest } from "./types";
+import { SiteRequestResponse } from "@/services/siteRequestService";
 
 type AdminSiteRequestTableProps = {
-  requests: SiteRequest[];
+  requests: SiteRequestResponse[];
   onSelect?: (requestId: number) => void;
   onApprove?: (requestId: number) => void;
   onReject?: (requestId: number) => void;
@@ -25,17 +25,15 @@ const stateVariant: Record<
   RECEIVED: "warning",
   APPROVED: "success",
   REJECTED: "destructive",
-  PENDING: "outline",
 };
 
 const stateLabels: Record<string, string> = {
-  RECEIVED: "접수됨",
-  APPROVED: "승인됨",
-  REJECTED: "거부됨",
-  PENDING: "대기중",
+  RECEIVED: "접수완료",
+  APPROVED: "승인",
+  REJECTED: "거부",
 };
 
-export function AdminSiteRequestTable({ requests, onSelect }: AdminSiteRequestTableProps) {
+export function AdminSiteRequestTable({ requests, onSelect, onApprove, onReject }: AdminSiteRequestTableProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("ko-KR", {
