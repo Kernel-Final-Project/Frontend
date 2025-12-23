@@ -39,7 +39,6 @@ export function BlogLinkTable({ blogLinks, onLogDetail, onWorkDetail }: BlogLink
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
             <TableHead className="font-semibold text-foreground w-16 text-center">ID</TableHead>
             <TableHead className="font-semibold text-foreground">블로그 링크</TableHead>
-            <TableHead className="font-semibold text-foreground text-center">상품</TableHead>
             <TableHead className="font-semibold text-foreground text-center">실행시간</TableHead>
             <TableHead className="font-semibold text-foreground w-24 text-center">상태</TableHead>
             <TableHead className="font-semibold text-foreground text-center">로그관리</TableHead>
@@ -72,7 +71,6 @@ export function BlogLinkTable({ blogLinks, onLogDetail, onWorkDetail }: BlogLink
                     {link.blogLink}
                   </a>
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground">{link.choiceProduct}</TableCell>
                 <TableCell className="text-center text-muted-foreground">{link.executionTime}</TableCell>
                 <TableCell className="text-center">
                   <Badge variant={workStatusVariant[link.rawStatus] ?? "default"}>

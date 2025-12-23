@@ -143,8 +143,6 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
     return koreaTime;
   };
 
-  const minDateTime = getMinimumDateTime();
-
   return (
     <div className="space-y-6">
       {/* 반복 유형 선택 */}
@@ -473,10 +471,12 @@ export function RecurrenceRuleForm({ value, onChange }: RecurrenceRuleFormProps)
                     selected={startDate}
                     onSelect={setStartDate}
                     disabled={(date) => {
-                      // 오늘보다 이전 날짜는 선택 불가
+                      // 오늘 이전 날짜는 선택 불가 (오늘 포함)
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
-                      return date < today;
+                      const targetDate = new Date(date);
+                      targetDate.setHours(0, 0, 0, 0);
+                      return targetDate <= today;
                     }}
                     initialFocus
                   />

@@ -37,6 +37,43 @@ const AddWorkflow = () => {
   const [blogTypes, setBlogTypes] = useState<BlogType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // 테스트 상태 폴링
+  useEffect(() => {
+    if (testStatus !== 'TESTING' || !testWorkflowId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
+        if (response.success) {
+          const status = response.data.testStatus;
+          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
+            setTestStatus(status);
+            setIsTesting(false);
+            clearInterval(interval);
+
+            if (status === 'TEST_PASSED') {
+              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
+              setTestErrorMessage(null);
+            } else {
+              // 실패 사유 표시
+              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
+              setTestErrorMessage(failureReason);
+              toast({
+                title: "테스트 실패",
+                description: failureReason,
+                variant: "destructive"
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('테스트 상태 조회 실패:', error);
+      }
+    }, 2000); // 2초마다 폴링
+
+    return () => clearInterval(interval);
+  }, [testStatus, testWorkflowId]);
+
   const [siteUrl, setSiteUrl] = useState("");
   const [blogId, setBlogId] = useState("");
   const [blogPassword, setBlogPassword] = useState("");
@@ -54,7 +91,11 @@ const AddWorkflow = () => {
     repeatType: "DAILY",
     repeatInterval: 1,
     timesOfDay: ["09:00"],
-    startAt: new Date().toISOString(),
+    startAt: (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString();
+    })(),
     endAt: null,
     daysOfWeek: null,
     daysOfMonth: null,
@@ -490,6 +531,38 @@ const AddWorkflow = () => {
             </div>
           </div>
         </div>
+        <br />
+
+        {/* 테스트 상태 표시 */}
+        {testStatus === 'TESTING' && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>테스트 진행 중</AlertTitle>
+            <AlertDescription>
+              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_PASSED' && (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-800">테스트 성공</AlertTitle>
+            <AlertDescription className="text-green-700">
+              AI 콘텐츠 생성 및 블로그 업로드 테스트에 성공했습니다. 이제 {isEditMode ? "수정" : "등록"}할 수 있습니다.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {testStatus === 'TEST_FAILED' && testErrorMessage && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>테스트 실패</AlertTitle>
+            <AlertDescription>
+              {testErrorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-6">
