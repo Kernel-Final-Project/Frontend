@@ -52,7 +52,11 @@ export function AdminWorkflowRegisterForm({ onCancel, onSuccess }: AdminWorkflow
     repeatType: "DAILY",
     repeatInterval: 1,
     timesOfDay: ["09:00"],
-    startAt: new Date().toISOString(),
+    startAt: (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString();
+    })(),
     endAt: null,
     daysOfWeek: null,
     daysOfMonth: null,
