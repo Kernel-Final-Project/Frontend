@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroBg from "@/assets/main-side-img1.png";
+import heroBg2 from "@/assets/main-side-img2.png";
 
 export function HeroSection() {
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 bg-gradient-to-br from-primary/10 via-background to-background">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-slate-900/40"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
 

@@ -33,11 +33,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header onLoginClick={() => setLoginOpen(true)} />
-      <main>
-        <HeroSection />
+      <main className="pt-16">
+        {/* <HeroSection /> */}
+        <FloatingLogosCTA />
         <WhySection />
         <FeaturesSection />
-        <FloatingLogosCTA />
         <NoticeSection />
       </main>
       <Footer />
