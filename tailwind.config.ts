@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["'Pretendard Variable'", "'Pretendard'", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        sans: ["'TMoneyDungunbaram'", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
