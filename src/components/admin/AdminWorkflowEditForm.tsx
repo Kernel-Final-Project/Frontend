@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Loader2, Workflow } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, BlogType, Category } from '@/services/workflowService';
+import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, WorkflowRegisterRequest, BlogType, Category } from '@/services/workflowService';
 import { RecurrenceRuleForm } from '@/components/workflow/RecurrenceRuleForm';
 import { validateRecurrenceRule } from '@/utils/recurrenceRuleHelper';
 import naverBlogLogo from '/naverBlog_logo.png';
@@ -169,24 +169,14 @@ export function AdminWorkflowEditForm({
       return toast({ title: "반복 규칙 오류", description: ruleError, variant: "destructive" });
     }
 
-    const selectedBlogType = blogTypes.find(bt => bt.blogTypeId === selectedBlogTypeId);
-
-    const req: WorkflowRequest = {
-      siteUrl,
-      blogTypeId: selectedBlogTypeId,
-      blogTypeName: selectedBlogType?.blogTypeName ?? '',
-      blogUrl,
-      categoryId: selectedCategoryId,
-      blogAccountId: blogId,
-      blogAccountPwd: blogPassword || undefined as any,
-      recurrenceRule,
-    };
-
     try {
       setIsRegistering(true);
 
       // 테스트는 이미 완료, 바로 등록
-      const registerResponse = await workflowService.registerWorkflow(workflowId, req);
+      const registerPayload: WorkflowRegisterRequest = {
+        replaceWorkflowId: workflowId,
+      };
+      const registerResponse = await workflowService.registerWorkflow(workflowId, registerPayload);
 
       if (registerResponse.success) {
         toast({ title: "수정 완료", description: "워크플로우가 수정되었습니다." });

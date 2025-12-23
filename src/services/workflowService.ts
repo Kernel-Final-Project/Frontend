@@ -97,6 +97,10 @@ export interface WorkflowRequest {
   recurrenceRule: RecurrenceRuleDto;  // DTO 사용
 }
 
+export interface WorkflowRegisterRequest extends Partial<WorkflowRequest> {
+  replaceWorkflowId?: number | null;
+}
+
 export interface SiteInfo {
   siteName: string;
   siteUrl: string;
@@ -209,7 +213,7 @@ export const workflowService = {
   },
 
   // 워크플로우 등록
-  async registerWorkflow(id: number, data: WorkflowRequest): Promise<ApiResponse<Workflow>> {
+  async registerWorkflow(id: number, data: WorkflowRegisterRequest): Promise<ApiResponse<Workflow>> {
     const response = await api.post(`/api/v1/workflow/${id}/register`, data);
     return response.data;
   },
