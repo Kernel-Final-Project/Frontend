@@ -7,6 +7,7 @@ import { AdminWorkSection } from "./AdminWorkSection";
 import { Settings2 } from "lucide-react";
 import { AdminUserStatsSection } from "./AdminUserStatsSection";
 import { AdminCommonCodeSection } from "./AdminCommonCodeSection";
+import { AdminBlogStatsSection } from "./AdminBlogStatsSection";
 
 type AdminMainContentProps = {
   section: AdminSection;
@@ -58,6 +59,10 @@ export function AdminMainContent({ section, onSectionChange, userFilter, workflo
 
   if (section === "stats") {
     return <AdminUserStatsSection active />;
+  }
+
+  if (section === "blog") {
+    return <AdminBlogStatsSection active />;
   }
 
   if (section === "code") {

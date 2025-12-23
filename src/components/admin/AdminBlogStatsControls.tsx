@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Granularity, DailyRange, WeeklyPeriod } from "./types";
-import { granularityOptions } from "./userStatsUtils";
+import { granularityOptions } from "./blogStatsUtils";
 import { RefreshCw, Loader2 } from "lucide-react";
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
   isReaggregating?: boolean;
 };
 
-export function AdminUserStatsControls({
+export function AdminBlogStatsControls({
   granularity,
   dailyRange,
   weeklyPeriod,
