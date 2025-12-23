@@ -1,24 +1,92 @@
-import api from '@/lib/api';
-import { ApiResponse } from './workflowService';
-import { SiteRequestPageResponse, SiteRequest } from '@/components/admin/types';
+import api from "@/lib/api";
+import { ApiResponse } from "./workflowService";
+
+/* =========================
+ * TYPES
+ * ========================= */
+
+export type SiteRequestState = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface SiteRequestPayload {
+  siteUrl: string;
+  siteName: string;
+  description: string;
+}
+
+export interface SiteRequestResponse {
+  requestId: number;
+  siteUrl: string;
+  siteName: string;
+  state: SiteRequestState;
+  description: string;
+  createdAt: string;
+}
+
+export interface SiteRequestPageResponse {
+  content: SiteRequestResponse[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+/* =========================
+ * SERVICE
+ * ========================= */
 
 export const siteRequestService = {
-  // 사이트 등록 요청 목록 조회 (페이지네이션)
-  async getSiteRequests(page: number = 0): Promise<ApiResponse<SiteRequestPageResponse>> {
-    const response = await api.get(`/api/v1/admin/site-requests`);
+  /* ---------- USER ---------- */
+
+  async submitRequest(
+    payload: SiteRequestPayload
+  ): Promise<ApiResponse<void>> {
+    const response = await api.post("/api/v1/site-requests", payload);
     return response.data;
   },
 
-  // 사이트 등록 요청 승인
-  async approveSiteRequest(requestId: number): Promise<ApiResponse<SiteRequest>> {
-    const response = await api.patch(`/api/v1/admin/site-requests/${requestId}/approve`);
+  async getMyRequests(
+    page: number = 0
+  ): Promise<ApiResponse<SiteRequestPageResponse>> {
+    const response = await api.get(
+      `/api/v1/site-requests/my?page=${page}`
+    );
     return response.data;
   },
 
-  // 사이트 등록 요청 거부
-  async rejectSiteRequest(requestId: number): Promise<ApiResponse<SiteRequest>> {
-    const response = await api.patch(`/api/v1/admin/site-requests/${requestId}/reject`);
+  /* ---------- ADMIN ---------- */
+
+  async getSiteRequests(
+    page: number = 0
+  ): Promise<ApiResponse<SiteRequestPageResponse>> {
+    const response = await api.get(
+      `/api/v1/admin/site-requests?page=${page}`
+    );
+    return response.data;
+  },
+
+  async approveSiteRequest(
+    requestId: number
+  ): Promise<ApiResponse<SiteRequestResponse>> {
+    const response = await api.patch(
+      `/api/v1/admin/site-requests/${requestId}/approve`
+    );
+    return response.data;
+  },
+
+  async rejectSiteRequest(
+    requestId: number
+  ): Promise<ApiResponse<SiteRequestResponse>> {
+    const response = await api.patch(
+      `/api/v1/admin/site-requests/${requestId}/reject`
+    );
     return response.data;
   },
 };
-

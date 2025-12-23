@@ -22,7 +22,7 @@ const companies = [
 
 export function FloatingLogosCTA() {
   return (
-    <section className="relative overflow-hidden bg-slate-100 px-4 py-24 md:py-32">
+    <section className="relative overflow-hidden bg-slate-100 px-4 pt-[calc(4rem+6rem)] pb-24 md:pt-[calc(4rem+8rem)] md:pb-32">
       <div className="pointer-events-none absolute inset-0 hidden md:block">
         {companies.map((company, index) => (
           <div

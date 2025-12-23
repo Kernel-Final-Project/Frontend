@@ -6,6 +6,7 @@ export interface User {
   name: string;
   provider: string;
   picture?: string;
+  role?: string;
 }
 
 export interface AuthResponse {

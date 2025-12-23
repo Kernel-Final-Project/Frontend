@@ -37,6 +37,43 @@ const AddWorkflow = () => {
   const [blogTypes, setBlogTypes] = useState<BlogType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // 테스트 상태 폴링
+  useEffect(() => {
+    if (testStatus !== 'TESTING' || !testWorkflowId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
+        if (response.success) {
+          const status = response.data.testStatus;
+          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
+            setTestStatus(status);
+            setIsTesting(false);
+            clearInterval(interval);
+
+            if (status === 'TEST_PASSED') {
+              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
+              setTestErrorMessage(null);
+            } else {
+              // 실패 사유 표시
+              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
+              setTestErrorMessage(failureReason);
+              toast({
+                title: "테스트 실패",
+                description: failureReason,
+                variant: "destructive"
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('테스트 상태 조회 실패:', error);
+      }
+    }, 2000); // 2초마다 폴링
+
+    return () => clearInterval(interval);
+  }, [testStatus, testWorkflowId]);
+
   const [siteUrl, setSiteUrl] = useState("");
   const [blogId, setBlogId] = useState("");
   const [blogPassword, setBlogPassword] = useState("");
@@ -54,7 +91,11 @@ const AddWorkflow = () => {
     repeatType: "DAILY",
     repeatInterval: 1,
     timesOfDay: ["09:00"],
-    startAt: new Date().toISOString(),
+    startAt: (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString();
+    })(),
     endAt: null,
     daysOfWeek: null,
     daysOfMonth: null,
@@ -137,57 +178,6 @@ const AddWorkflow = () => {
     setRecurrenceRule({ ...workflowData.recurrenceRule });
 
   }, [workflowData, categories]);
-
-  // 테스트 상태 폴링
-  useEffect(() => {
-    if (testStatus !== 'TESTING' || !testWorkflowId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const response = await workflowService.getTestWorkflowDetail(testWorkflowId);
-        if (response.success) {
-          const status = response.data.testStatus;
-          if (status === 'TEST_PASSED' || status === 'TEST_FAILED') {
-            setTestStatus(status);
-            setIsTesting(false);
-            clearInterval(interval);
-
-            if (status === 'TEST_PASSED') {
-              toast({ title: "테스트 성공", description: "워크플로우 테스트에 성공했습니다." });
-              setTestErrorMessage(null);
-            } else {
-              const failureReason = response.data.latestWork?.failureReason || "워크플로우 테스트에 실패했습니다.";
-              setTestErrorMessage(failureReason);
-              toast({ title: "테스트 실패", description: failureReason, variant: "destructive" });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('테스트 상태 조회 실패:', error);
-      }
-    }, 30000); // 폴링 주기 30초
-
-    return () => clearInterval(interval);
-  }, [testStatus, testWorkflowId]);
-
-
-  // 계정 정보 변경 시 테스트 초기화
-  useEffect(() => {
-    if (!originalTestFields || testStatus !== 'TEST_PASSED') return;
-
-    const fieldsChanged =
-      blogId !== originalTestFields.blogId ||
-      blogPassword !== originalTestFields.blogPassword ||
-      blogUrl !== originalTestFields.blogUrl;
-
-    if (fieldsChanged) {
-      setTestStatus('NOT_TESTED');
-      setTestWorkflowId(null);
-      setTestErrorMessage(null);
-      setOriginalTestFields(null);
-    }
-  }, [blogId, blogPassword, blogUrl, originalTestFields, testStatus]);
-
 
   // ==============================
   // 카테고리 변경 핸들러
@@ -549,7 +539,7 @@ const AddWorkflow = () => {
             <Loader2 className="h-4 w-4 animate-spin" />
             <AlertTitle>테스트 진행 중</AlertTitle>
             <AlertDescription>
-              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 몇 분 정도 소요될 수 있으니 페이지를 이동하지 말고 기다려주세요.
+              AI 콘텐츠를 생성하고 블로그에 업로드하는 테스트를 진행하고 있습니다. 잠시만 기다려주세요...
             </AlertDescription>
           </Alert>
         )}
@@ -573,7 +563,6 @@ const AddWorkflow = () => {
             </AlertDescription>
           </Alert>
         )}
-        <br />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-6">
