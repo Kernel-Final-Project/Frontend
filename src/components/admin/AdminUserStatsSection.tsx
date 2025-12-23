@@ -1,100 +1,42 @@
-import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, BarChart3, Loader2 } from "lucide-react";
-import { AxiosError } from "axios";
-import { statisticsService } from "@/services/statisticsService";
-import { DailyRange, Granularity, NormalizedUserStatPoint, WeeklyPeriod } from "./types";
 import { AdminUserStatsControls } from "./AdminUserStatsControls";
 import { AdminUserStatsSummary } from "./AdminUserStatsSummary";
 import { AdminUserStatsChart } from "./AdminUserStatsChart";
 import { AdminUserStatsTable } from "./AdminUserStatsTable";
 import { defaultDailyRange, defaultMonthlyYear, defaultWeeklyPeriod, normalizeUserStats } from "./userStatsUtils";
+import { useStatistics } from "@/hooks/useStatistics";
 
 type AdminUserStatsSectionProps = {
   active: boolean;
 };
 
 export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
-  const [granularity, setGranularity] = useState<Granularity>("daily");
-  const [dailyRange, setDailyRange] = useState<DailyRange>(defaultDailyRange());
-  const [weeklyPeriod, setWeeklyPeriod] = useState<WeeklyPeriod>(defaultWeeklyPeriod());
-  const [monthlyYear, setMonthlyYear] = useState<number>(defaultMonthlyYear());
-  const [data, setData] = useState<NormalizedUserStatPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isReaggregating, setIsReaggregating] = useState(false);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const raw =
-        granularity === "daily"
-          ? await statisticsService.getUserStats({
-              granularity,
-              startDate: dailyRange.start,
-              endDate: dailyRange.end,
-            })
-          : granularity === "weekly"
-          ? await statisticsService.getUserStats({
-              granularity,
-              year: weeklyPeriod.year,
-              month: weeklyPeriod.month,
-            })
-          : await statisticsService.getUserStats({
-              granularity,
-              year: monthlyYear,
-            });
-      setData(normalizeUserStats(granularity, raw));
-      setError(null);
-    } catch (err) {
-      const msg = err instanceof AxiosError
-        ? err.response?.data?.message || err.message
-        : err instanceof Error
-        ? err.message
-        : "사용자 통계를 불러오지 못했습니다.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!active) return;
-    fetchStats();
-  }, [active, granularity, dailyRange.start, dailyRange.end, weeklyPeriod.year, weeklyPeriod.month, monthlyYear]);
-
-  const handleReaggregate = async () => {
-    if (granularity !== "daily") {
-      alert("일별 조회 모드에서만 재집계가 가능합니다.");
-      return;
-    }
-
-    const confirmed = confirm(
-      `${dailyRange.start} ~ ${dailyRange.end} 기간의 통계를 재집계하시겠습니까?\n기존 데이터는 덮어씌워집니다.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setIsReaggregating(true);
-      await statisticsService.reaggregateStats(dailyRange.start, dailyRange.end);
-
-      // 재집계 성공 후 통계 다시 불러오기
-      await fetchStats();
-
-      alert("통계 재집계가 완료되었습니다.");
-    } catch (err) {
-      const msg = err instanceof AxiosError
-        ? err.response?.data?.message || err.message
-        : "재집계에 실패했습니다.";
-      alert(msg);
-    } finally {
-      setIsReaggregating(false);
-    }
-  };
-
-  const latest = useMemo(() => data[data.length - 1], [data]);
+  const {
+    granularity,
+    setGranularity,
+    dailyRange,
+    setDailyRange,
+    weeklyPeriod,
+    setWeeklyPeriod,
+    monthlyYear,
+    setMonthlyYear,
+    data,
+    loading,
+    error,
+    isReaggregating,
+    handleReaggregate,
+    latest,
+  } = useStatistics({
+    active,
+    statType: "user",
+    normalizeStats: normalizeUserStats,
+    defaultDailyRange,
+    defaultWeeklyPeriod,
+    defaultMonthlyYear,
+    errorMessage: "사용자 통계를 불러오지 못했습니다.",
+  });
 
   return (
     <Card className="card-shadow overflow-hidden">
