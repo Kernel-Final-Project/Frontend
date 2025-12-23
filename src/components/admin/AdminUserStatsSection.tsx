@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, BarChart3, Loader2 } from "lucide-react";
+import { AxiosError } from "axios";
 import { statisticsService } from "@/services/statisticsService";
 import { DailyRange, Granularity, NormalizedUserStatPoint, WeeklyPeriod } from "./types";
 import { AdminUserStatsControls } from "./AdminUserStatsControls";
@@ -47,10 +48,11 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
       setData(normalizeUserStats(granularity, raw));
       setError(null);
     } catch (err) {
-      const msg =
-        (err as any)?.response?.data?.message ||
-        (err as Error)?.message ||
-        "사용자 통계를 불러오지 못했습니다.";
+      const msg = err instanceof AxiosError
+        ? err.response?.data?.message || err.message
+        : err instanceof Error
+        ? err.message
+        : "사용자 통계를 불러오지 못했습니다.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -83,7 +85,9 @@ export function AdminUserStatsSection({ active }: AdminUserStatsSectionProps) {
 
       alert("통계 재집계가 완료되었습니다.");
     } catch (err) {
-      const msg = (err as any)?.response?.data?.message || "재집계에 실패했습니다.";
+      const msg = err instanceof AxiosError
+        ? err.response?.data?.message || err.message
+        : "재집계에 실패했습니다.";
       alert(msg);
     } finally {
       setIsReaggregating(false);
