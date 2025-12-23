@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { AxiosError } from "axios";
-import { Granularity, DailyRange, WeeklyPeriod } from "@/components/admin/types";
+import { Granularity, DailyRange, WeeklyPeriod, UserStatPoint, BlogStatPoint } from "@/components/admin/types";
 import { statisticsService } from "@/services/statisticsService";
 
 type StatPoint = {
@@ -8,17 +8,19 @@ type StatPoint = {
   [key: string]: string | number;
 };
 
-type UseStatisticsParams<T> = {
+type RawStatPoint = UserStatPoint | BlogStatPoint;
+
+type UseStatisticsParams<T extends StatPoint, R extends RawStatPoint> = {
   active: boolean;
   statType: "user" | "blog";
-  normalizeStats: (granularity: Granularity, raw: any[]) => T[];
+  normalizeStats: (granularity: Granularity, raw: R[]) => T[];
   defaultDailyRange: () => DailyRange;
   defaultWeeklyPeriod: () => WeeklyPeriod;
   defaultMonthlyYear: () => number;
   errorMessage: string;
 };
 
-export function useStatistics<T extends StatPoint>({
+export function useStatistics<T extends StatPoint, R extends RawStatPoint>({
   active,
   statType,
   normalizeStats,
@@ -26,7 +28,7 @@ export function useStatistics<T extends StatPoint>({
   defaultWeeklyPeriod,
   defaultMonthlyYear,
   errorMessage,
-}: UseStatisticsParams<T>) {
+}: UseStatisticsParams<T, R>) {
   const [granularity, setGranularity] = useState<Granularity>("daily");
   const [dailyRange, setDailyRange] = useState<DailyRange>(defaultDailyRange());
   const [weeklyPeriod, setWeeklyPeriod] = useState<WeeklyPeriod>(defaultWeeklyPeriod());
@@ -39,27 +41,44 @@ export function useStatistics<T extends StatPoint>({
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
-      const getStatsMethod = statType === "user"
-        ? statisticsService.getUserStats
-        : statisticsService.getBlogStats;
+      let raw: R[];
 
-      const raw =
-        granularity === "daily"
-          ? await getStatsMethod({
+      if (statType === "user") {
+        raw = (granularity === "daily"
+          ? await statisticsService.getUserStats({
               granularity,
               startDate: dailyRange.start,
               endDate: dailyRange.end,
             })
           : granularity === "weekly"
-          ? await getStatsMethod({
+          ? await statisticsService.getUserStats({
               granularity,
               year: weeklyPeriod.year,
               month: weeklyPeriod.month,
             })
-          : await getStatsMethod({
+          : await statisticsService.getUserStats({
               granularity,
               year: monthlyYear,
-            });
+            })) as R[];
+      } else {
+        raw = (granularity === "daily"
+          ? await statisticsService.getBlogStats({
+              granularity,
+              startDate: dailyRange.start,
+              endDate: dailyRange.end,
+            })
+          : granularity === "weekly"
+          ? await statisticsService.getBlogStats({
+              granularity,
+              year: weeklyPeriod.year,
+              month: weeklyPeriod.month,
+            })
+          : await statisticsService.getBlogStats({
+              granularity,
+              year: monthlyYear,
+            })) as R[];
+      }
+
       setData(normalizeStats(granularity, raw));
       setError(null);
     } catch (err) {
