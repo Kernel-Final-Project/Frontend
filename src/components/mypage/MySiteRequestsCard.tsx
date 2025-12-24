@@ -10,15 +10,15 @@ const stateVariant: Record<
   string,
   "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
 > = {
-  PENDING: "warning",
+  RECEIVED: "warning",
   APPROVED: "success",
   REJECTED: "destructive",
 };
 
 const stateLabels: Record<string, string> = {
-  PENDING: "대기 중",
-  APPROVED: "승인됨",
-  REJECTED: "거부됨",
+  RECEIVED: "접수완료",
+  APPROVED: "승인",
+  REJECTED: "거부",
 };
 
 export function MySiteRequestsCard() {

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, BlogType, Category } from '@/services/workflowService';
+import { workflowService, SiteInfo, RecurrenceRuleDto, WorkflowRequest, WorkflowRegisterRequest, BlogType, Category } from '@/services/workflowService';
 import { RecurrenceRuleForm } from '@/components/workflow/RecurrenceRuleForm';
 import { validateRecurrenceRule } from '@/utils/recurrenceRuleHelper';
 import naverBlogLogo from '/naverBlog_logo.png';
@@ -303,9 +303,13 @@ const AddWorkflow = () => {
     try {
       setIsRegistering(true);
 
+      const registerPayload: WorkflowRegisterRequest = isEditMode
+        ? { replaceWorkflowId: workflowId! }
+        : { ...req };
+
       // 테스트는 이미 완료, 바로 등록
       // edit/create 모두 testWorkflowId 사용
-      const response = await workflowService.registerWorkflow(testWorkflowId!, req);
+      const response = await workflowService.registerWorkflow(testWorkflowId!, registerPayload);
 
       if (response.success) {
         toast({ title: isEditMode ? "수정 완료" : "등록 완료" });

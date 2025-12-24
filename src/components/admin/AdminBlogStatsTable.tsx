@@ -3,16 +3,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { NormalizedUserStatPoint } from "./types";
-import { formatRate } from "./userStatsUtils";
+import { NormalizedBlogStatPoint } from "./types";
+import { formatRate } from "./blogStatsUtils";
 
 type Props = {
-  data: NormalizedUserStatPoint[];
+  data: NormalizedBlogStatPoint[];
 };
 
 const ITEMS_PER_PAGE = 10;
 
-export function AdminUserStatsTable({ data }: Props) {
+export function AdminBlogStatsTable({ data }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
@@ -37,27 +37,19 @@ export function AdminUserStatsTable({ data }: Props) {
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/50">
-              <TableHead className="w-32 text-center">기간</TableHead>
-              <TableHead className="w-32 text-center">총 사용자</TableHead>
-              <TableHead className="w-32 text-center">전일 대비</TableHead>
-              <TableHead className="w-32 text-center">활성 사용자</TableHead>
-              <TableHead className="w-32 text-center">전일 대비</TableHead>
+              <TableHead className="w-48 text-center">기간</TableHead>
+              <TableHead className="w-32 text-center">포스트 수</TableHead>
+              <TableHead className="w-32 text-center">전 기간 대비</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.map((row) => (
               <TableRow key={row.label} className="hover:bg-muted/50">
                 <TableCell className="text-center text-muted-foreground">{row.label}</TableCell>
-                <TableCell className="text-center font-semibold text-foreground">{row.totalUsers.toLocaleString()}</TableCell>
+                <TableCell className="text-center font-semibold text-foreground">{row.postCount.toLocaleString()}</TableCell>
                 <TableCell className="text-center">
-                  <Badge variant={row.userGrowthRate >= 0 ? "success" : "destructive"} className="min-w-[80px] justify-center">
-                    {formatRate(row.userGrowthRate)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center font-semibold text-foreground">{row.activeUsers.toLocaleString()}</TableCell>
-                <TableCell className="text-center">
-                  <Badge variant={row.activeUserGrowthRate >= 0 ? "success" : "destructive"} className="min-w-[80px] justify-center">
-                    {formatRate(row.activeUserGrowthRate)}
+                  <Badge variant={row.postGrowthRate >= 0 ? "success" : "destructive"} className="min-w-[80px] justify-center">
+                    {formatRate(row.postGrowthRate)}
                   </Badge>
                 </TableCell>
               </TableRow>

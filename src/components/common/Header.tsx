@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -126,6 +126,12 @@ export function Header({ onLoginClick }: HeaderProps) {
                   <User className="mr-2 h-4 w-4" />
                   마이페이지
                 </DropdownMenuItem>
+                {user.role === 'ADMIN' && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    관리자 페이지
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -225,6 +231,19 @@ export function Header({ onLoginClick }: HeaderProps) {
                   <User className="mr-2 h-4 w-4" />
                   마이페이지
                 </Button>
+                {user?.role === 'ADMIN' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigate('/admin');
+                      setIsMenuOpen(false);
+                    }}
+                    className="justify-start"
+                  >
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    관리자 페이지
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={handleLogout}

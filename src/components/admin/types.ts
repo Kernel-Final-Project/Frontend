@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
-export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats";
+export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats" | "blog" | "site-request";
 
 export type AdminNavItem = {
   id: AdminSection;
@@ -60,3 +60,56 @@ export type NormalizedUserStatPoint = {
 
 export type DailyRange = { start: string; end: string };
 export type WeeklyPeriod = { year: number; month: number };
+
+export type BlogStatPoint = {
+  statDate?: string;
+  week?: string;
+  startDate?: string;
+  endDate?: string;
+  yearMonth?: string;
+  postCount: number;
+};
+
+export type NormalizedBlogStatPoint = {
+  label: string;
+  postCount: number;
+  postGrowthRate: number;
+};
+
+export type SiteRequest = {
+  requestId: number;
+  siteUrl: string;
+  siteName: string;
+  state: string;
+  description: string | null;
+  createdAt: string;
+};
+
+export type SiteRequestPageResponse = {
+  content: SiteRequest[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  empty: boolean;
+};
