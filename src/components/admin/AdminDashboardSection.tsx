@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { ArrowUp, ArrowDown, Users, FileText, Clock, Loader2, AlertCircle } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { Granularity } from "./types";
 
 type StatCardProps = {
   title: string;
@@ -40,7 +42,8 @@ function StatCard({ title, value, change, icon }: StatCardProps) {
 }
 
 export function AdminDashboardSection({ active }: { active?: boolean }) {
-  const { summary, trendData, platformData, loading, error } = useDashboardStats(active || false);
+  const [granularity, setGranularity] = useState<Granularity>("daily");
+  const { summary, trendData, platformData, loading, error } = useDashboardStats(active || false, granularity);
 
   if (!active) return null;
 
@@ -96,9 +99,12 @@ export function AdminDashboardSection({ active }: { active?: boolean }) {
   const totalPlatformPosts = platformData.reduce((sum, p) => sum + p.postCount, 0);
   const platformChartData = platformData.map(p => ({
     name: p.platformName,
-    count: p.postCount,
+    value: p.postCount,
     percentage: totalPlatformPosts > 0 ? Math.round((p.postCount / totalPlatformPosts) * 100) : 0,
   }));
+
+  // 파이 차트 색상
+  const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
 
   return (
     <div className="space-y-6">
@@ -115,29 +121,30 @@ export function AdminDashboardSection({ active }: { active?: boolean }) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>발행 추이</CardTitle>
-              <CardDescription>이용자수, 포스트 수 (최근 7일)</CardDescription>
+              <CardDescription>
+                이용자수, 포스트 수 ({granularity === "daily" ? "최근 7일" : granularity === "weekly" ? "최근 8주" : "최근 12개월"})
+              </CardDescription>
             </div>
-            {/* 추후 기간 필터 기능 추가 예정 */}
-            {/* <div className="flex gap-2">
+            <div className="flex gap-2">
               <button
-                onClick={() => setTimeRange("daily")}
-                className={`px-3 py-1 text-sm rounded ${timeRange === "daily" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                onClick={() => setGranularity("daily")}
+                className={`px-3 py-1 text-sm rounded transition-colors ${granularity === "daily" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 일별
               </button>
               <button
-                onClick={() => setTimeRange("weekly")}
-                className={`px-3 py-1 text-sm rounded ${timeRange === "weekly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                onClick={() => setGranularity("weekly")}
+                className={`px-3 py-1 text-sm rounded transition-colors ${granularity === "weekly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 주별
               </button>
               <button
-                onClick={() => setTimeRange("monthly")}
-                className={`px-3 py-1 text-sm rounded ${timeRange === "monthly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                onClick={() => setGranularity("monthly")}
+                className={`px-3 py-1 text-sm rounded transition-colors ${granularity === "monthly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 월별
               </button>
-            </div> */}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -179,20 +186,36 @@ export function AdminDashboardSection({ active }: { active?: boolean }) {
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={platformChartData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" />
+                  <PieChart>
+                    <Pie
+                      data={platformChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name} ${percentage}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {platformChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
                     <Tooltip />
-                    <Bar dataKey="count" fill="#3b82f6" />
-                  </BarChart>
+                  </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
                   {platformChartData.map((platform, index) => (
                     <div key={index} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{platform.name}</span>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="text-gray-600">{platform.name}</span>
+                      </div>
                       <span className="font-medium text-gray-900">
-                        {platform.count.toLocaleString()}건 ({platform.percentage}%)
+                        {platform.value.toLocaleString()}건 ({platform.percentage}%)
                       </span>
                     </div>
                   ))}
