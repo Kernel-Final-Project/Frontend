@@ -4,9 +4,10 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminMainContent } from "@/components/admin/AdminMainContent";
 import { AdminNavItem, AdminSection, UserFilterInfo, WorkflowFilterInfo } from "@/components/admin/types";
-import { ClipboardList, Settings2, Users, Workflow, FileText, BarChart3, BookOpen, Globe } from "lucide-react";
+import { Home, ClipboardList, Settings2, Users, Workflow, FileText, BarChart3, BookOpen, Globe } from "lucide-react";
 
 const adminNav: AdminNavItem[] = [
+    { id: "dashboard", label: "대시보드", description: "전체 통계 요약", icon: Home },
     { id: "notice", label: "공지사항 관리", description: "공지 등록/수정/삭제", icon: ClipboardList },
     { id: "user", label: "사용자 관리", description: "권한/계정 관리", icon: Users },
     { id: "workflow", label: "워크플로우 관리", description: "전체 워크플로우 조회/관리", icon: Workflow },

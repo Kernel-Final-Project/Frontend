@@ -1,3 +1,4 @@
+import { AdminDashboardSection } from "./AdminDashboardSection";
 import { AdminNoticeSection } from "./AdminNoticeSection";
 import { AdminPlaceholderPanel } from "./AdminPlaceholderPanel";
 import { AdminSection, UserFilterInfo, WorkflowFilterInfo } from "./types";
@@ -18,6 +19,10 @@ type AdminMainContentProps = {
 };
 
 export function AdminMainContent({ section, onSectionChange, userFilter, workflowFilter }: AdminMainContentProps) {
+  if (section === "dashboard") {
+    return <AdminDashboardSection active />;
+  }
+  
   if (section === "notice") {
     return <AdminNoticeSection active />;
   }
