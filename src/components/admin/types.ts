@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
-export type AdminSection = "notice" | "user" | "code" | "workflow" | "work" | "stats" | "blog" | "site-request";
+export type AdminSection ="dashboard" | "notice" | "user" | "code" | "workflow" | "work" | "stats" | "blog" | "site-request";
 
 export type AdminNavItem = {
   id: AdminSection;
@@ -74,6 +74,26 @@ export type NormalizedBlogStatPoint = {
   label: string;
   postCount: number;
   postGrowthRate: number;
+};
+
+export type DashboardSummary = {
+  totalUsers: number;
+  userGrowthRate: number;
+  totalPosts: number;
+  postGrowthRate: number;
+  todayActiveUsers: number;
+  todayActiveGrowthRate: number;
+};
+
+export type DashboardTrendPoint = {
+  date: string;
+  users: number;
+  posts: number;
+};
+
+export type PlatformStatistics = {
+  platformName: string;
+  postCount: number;
 };
 
 export type SiteRequest = {
