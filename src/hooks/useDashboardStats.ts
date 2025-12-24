@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { AxiosError } from "axios";
-import { DashboardSummary, DashboardTrendPoint, PlatformStatistics } from "@/components/admin/types";
+import { DashboardSummary, DashboardTrendPoint, PlatformStatistics, Granularity } from "@/components/admin/types";
 import { statisticsService } from "@/services/statisticsService";
 
-export function useDashboardStats(active: boolean) {
+export function useDashboardStats(active: boolean, granularity: Granularity = "daily") {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [trendData, setTrendData] = useState<DashboardTrendPoint[]>([]);
   const [platformData, setPlatformData] = useState<PlatformStatistics[]>([]);
@@ -27,7 +27,7 @@ export function useDashboardStats(active: boolean) {
 
         const [summaryData, trendData, platformStats] = await Promise.all([
           statisticsService.getDashboardSummary(),
-          statisticsService.getDashboardTrend(),
+          statisticsService.getDashboardTrend(granularity),
           statisticsService.getPlatformStatistics(formatDate(startDate), formatDate(endDate)),
         ]);
 
@@ -48,7 +48,7 @@ export function useDashboardStats(active: boolean) {
     };
 
     fetchDashboardData();
-  }, [active]);
+  }, [active, granularity]);
 
   return {
     summary,

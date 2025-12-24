@@ -87,46 +87,84 @@ export const statisticsService = {
     };
   },
 
-  async getDashboardTrend(): Promise<DashboardTrendPoint[]> {
-    const endDate = new Date();
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - 6); // 최근 7일
-
+  async getDashboardTrend(granularity: Granularity = "daily"): Promise<DashboardTrendPoint[]> {
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
-    const startStr = formatDate(startDate);
-    const endStr = formatDate(endDate);
+    let userStats, blogStats;
 
-    const [userStats, blogStats] = await Promise.all([
-      this.getUserStats({ granularity: "daily", startDate: startStr, endDate: endStr }),
-      this.getBlogStats({ granularity: "daily", startDate: startStr, endDate: endStr }),
-    ]);
+    if (granularity === "daily") {
+      // 최근 7일
+      const endDate = new Date();
+      const startDate = new Date(endDate);
+      startDate.setDate(startDate.getDate() - 6);
 
-    // 날짜별 매핑
+      [userStats, blogStats] = await Promise.all([
+        this.getUserStats({ granularity: "daily", startDate: formatDate(startDate), endDate: formatDate(endDate) }),
+        this.getBlogStats({ granularity: "daily", startDate: formatDate(startDate), endDate: formatDate(endDate) }),
+      ]);
+    } else if (granularity === "weekly") {
+      // 최근 8주
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
+
+      [userStats, blogStats] = await Promise.all([
+        this.getUserStats({ granularity: "weekly", year: currentYear, month: currentMonth }),
+        this.getBlogStats({ granularity: "weekly", year: currentYear, month: currentMonth }),
+      ]);
+    } else {
+      // 최근 12개월 (월별)
+      const currentYear = new Date().getFullYear();
+
+      [userStats, blogStats] = await Promise.all([
+        this.getUserStats({ granularity: "monthly", year: currentYear }),
+        this.getBlogStats({ granularity: "monthly", year: currentYear }),
+      ]);
+    }
+
+    // 데이터 매핑
     const trendMap = new Map<string, DashboardTrendPoint>();
 
     userStats.forEach(stat => {
-      if (stat.statDate) {
-        trendMap.set(stat.statDate, {
-          date: stat.statDate,
-          users: stat.totalUsers,
-          posts: 0,
-        });
+      let dateKey: string;
+      if (granularity === "daily" && stat.statDate) {
+        dateKey = stat.statDate;
+      } else if (granularity === "weekly" && stat.weekPeriod) {
+        dateKey = stat.weekPeriod;
+      } else if (granularity === "monthly" && stat.monthPeriod) {
+        dateKey = stat.monthPeriod;
+      } else {
+        return;
       }
+
+      trendMap.set(dateKey, {
+        date: dateKey,
+        users: stat.totalUsers,
+        posts: 0,
+      });
     });
 
     blogStats.forEach(stat => {
-      if (stat.statDate) {
-        const existing = trendMap.get(stat.statDate);
-        if (existing) {
-          existing.posts = stat.postCount;
-        } else {
-          trendMap.set(stat.statDate, {
-            date: stat.statDate,
-            users: 0,
-            posts: stat.postCount,
-          });
-        }
+      let dateKey: string;
+      if (granularity === "daily" && stat.statDate) {
+        dateKey = stat.statDate;
+      } else if (granularity === "weekly" && stat.week) {
+        dateKey = stat.week;
+      } else if (granularity === "monthly" && stat.yearMonth) {
+        dateKey = stat.yearMonth;
+      } else {
+        return;
+      }
+
+      const existing = trendMap.get(dateKey);
+      if (existing) {
+        existing.posts = stat.postCount;
+      } else {
+        trendMap.set(dateKey, {
+          date: dateKey,
+          users: 0,
+          posts: stat.postCount,
+        });
       }
     });
 
