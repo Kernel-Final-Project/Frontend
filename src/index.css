@@ -119,13 +119,22 @@
     @apply border-border;
   }
 
-  html {
+  html,
+  body {
     scroll-behavior: smooth;
+    /* 스크롤바가 사라질 때 레이아웃 shift 방지 */
+    overflow-y: scroll !important;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'TMoneyDungunbaram', sans-serif;
+  }
+
+  /* Radix UI Portal이 body에 overflow hidden을 적용해도 스크롤 유지 */
+  body[style*="overflow: hidden"] {
+    overflow-y: scroll !important;
+    padding-right: 0 !important;
   }
 
   * {
